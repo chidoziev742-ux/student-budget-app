@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Budget Tracker</title>
+    <link rel="stylesheet" href="styles.css?v=2.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Aggressive Cache Clearing Script -->
+    <script>
+        // Clear ALL service worker caches and unregister workers
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.unregister();
+                    console.log('[Cache] Service Worker unregistered');
+                });
+            });
+            
+            if ('caches' in window) {
+                caches.keys().then(cacheNames => {
+                    cacheNames.forEach(cacheName => {
+                        // Delete ALL caches - this forces fresh download on next page load
+                        caches.delete(cacheName);
+                        console.log('[Cache] Deleted cache:', cacheName);
+                    });
+                });
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Authentication Screen -->
+    <div id="auth-screen" class="auth-screen" style="display: none;">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>Student Budget Tracker</h1>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form-element" class="auth-form active">
+                <h2>Sign In</h2>
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <div id="login-error" class="error-message"></div>
+                <button type="submit" class="btn btn-primary btn-large">Sign In</button>
+                <p class="auth-switch">Don't have an account? <a href="#" onclick="window.switchAuthForm('signup'); return false;">Create one</a></p>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form-element" class="auth-form">
+                <h2>Create Account</h2>
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" placeholder="Create a password (min 6 characters)" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="signup-gender">Gender</label>
+                    <select id="signup-gender" required>
+                        <option value="">Select your gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                </div>
+                <div id="signup-error" class="error-message"></div>
+                <button type="submit" class="btn btn-primary btn-large">Create Account</button>
+                <p class="auth-switch">Already have an account? <a href="#" onclick="window.switchAuthForm('login'); return false;">Sign in</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header" style="display: flex !important; justify-content: space-between !important; align-items: center !important; flex-wrap: wrap; gap: 1.5rem;">
+            <div class="header-actions" style="order: 1; display: flex; align-items: center;">
+                <button id="settings-btn" class="header-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            <div class="header-content" style="order: 2; flex: 1; text-align: center; padding: 0 1rem;">
+                <h1 style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 0; margin-bottom: 0.25rem;"><i class="fas fa-graduation-cap"></i> Student Budget Tracker</h1>
+                <p class="subtitle" style="margin: 0; margin-bottom: 0.25rem;">Manage your finances like a pro student</p>
+                <p id="greeting-message" class="greeting-message" style="margin-top: 0.25rem;"></p>
+            </div>
+            <div class="current-month-display" style="order: 3; white-space: nowrap;">
+                <span id="current-month">April 2023</span>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#dashboard" class="nav-link active" data-page="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#budget" class="nav-link" data-page="budget">
+                        <i class="fas fa-wallet"></i>
+                        <span>Budget</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#expense" class="nav-link" data-page="expense">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add Expense</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#history" class="nav-link" data-page="history">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#savings" class="nav-link" data-page="savings">
+                        <i class="fas fa-piggy-bank"></i>
+                        <span>Savings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#settings" class="nav-link" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <section id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                    <p class="page-subtitle">Your financial overview</p>
+                </div>
+                
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card total-budget">
+                        <div class="card-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Budget</h3>
+                            <p class="amount" id="total-budget">₦0.00</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card remaining-balance">
+                        <div class="card-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Remaining</h3>
+                            <p class="amount" id="remaining-balance">₦0.00</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card total-spent">
+                        <div class="card-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Spent</h3>
+                            <p class="amount" id="total-spent">₦0.00</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card total-savings">
+                        <div class="card-icon">
+                            <i class="fas fa-piggy-bank"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Savings</h3>
+                            <p class="amount" id="total-savings">₦0.00</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Expenses -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-receipt"></i> Recent Expenses</h3>
+                        <a href="#history" class="view-all-link">View All</a>
+                    </div>
+                    <div class="recent-expenses" id="recent-expenses">
+                        <!-- Recent expenses will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <p>No expenses recorded yet</p>
+                            <a href="#expense" class="btn btn-primary">Add Your First Expense</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Category Breakdown -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-chart-pie"></i> Spending by Category</h3>
+                    </div>
+                    <div class="category-breakdown" id="category-breakdown">
+                        <!-- Category breakdown will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>No spending data to display</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Budget Page -->
+            <section id="budget-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-wallet"></i> Set Your Budget</h2>
+                    <p class="page-subtitle">Define your monthly spending limit</p>
+                </div>
+                
+                <div class="budget-form-container">
+                    <div class="card">
+                        <div class="card-content">
+                            <form id="budget-form">
+                                <div class="form-group">
+                                    <label for="monthly-budget">
+                                        <i class="fas fa-calendar-alt"></i> Monthly Budget
+                                    </label>
+                                    <div class="input-with-icon">
+                                        <span class="currency-symbol">₦</span>
+                                        <input type="number" id="monthly-budget" step="0.01" min="0" placeholder="0.00" required>
+                                    </div>
+                                    <small class="form-hint">Enter your total monthly budget</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="savings-goal">
+                                        <i class="fas fa-bullseye"></i> Monthly Savings Goal (Optional)
+                                    </label>
+                                    <div class="input-with-icon">
+                                        <span class="currency-symbol">₦</span>
+                                        <input type="number" id="savings-goal" step="0.01" min="0" placeholder="0.00">
+                                    </div>
+                                    <small class="form-hint">How much you want to save this month</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="budget-category">
+                                        <i class="fas fa-tags"></i> Budget Category (Optional)
+                                    </label>
+                                    <select id="budget-category">
+                                        <option value="">General Budget</option>
+                                        <option value="food">Food & Dining</option>
+                                        <option value="transport">Transportation</option>
+                                        <option value="entertainment">Entertainment</option>
+                                        <option value="education">Education</option>
+                                        <option value="shopping">Shopping</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary btn-large">
+                                        <i class="fas fa-save"></i> Save Budget
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="current-budget-display card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-chart-line"></i> Current Budget Status</h3>
+                            <div class="budget-status">
+                                <div class="budget-item">
+                                    <span class="budget-label">Monthly Budget:</span>
+                                    <span class="budget-value" id="current-monthly-budget">₦0.00</span>
+                                </div>
+                                <div class="budget-item">
+                                    <span class="budget-label">Savings Goal:</span>
+                                    <span class="budget-value" id="current-savings-goal">₦0.00</span>
+                                </div>
+                                <div class="budget-item">
+                                    <span class="budget-label">Days Remaining:</span>
+                                    <span class="budget-value" id="days-remaining">0</span>
+                                </div>
+                                <div class="budget-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="budget-progress-fill"></div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span>Budget Used: <span id="budget-used-percent">0%</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add Expense Page -->
+            <section id="expense-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-plus-circle"></i> Add New Expense</h2>
+                    <p class="page-subtitle">Record where your money goes</p>
+                </div>
+                
+                <div class="expense-form-container">
+                    <div class="card">
+                        <div class="card-content">
+                            <form id="expense-form">
+                                <div class="form-group">
+                                    <label for="expense-amount">
+                                        <i class="fas fa-money-bill-wave"></i> Amount
+                                    </label>
+                                    <div class="input-with-icon">
+                                        <span class="currency-symbol">₦</span>
+                                        <input type="text" id="expense-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="expense-category">
+                                        <i class="fas fa-tags"></i> Category
+                                    </label>
+                                    <select id="expense-category" required>
+                                        <option value="">Select a category</option>
+                                        <option value="food">Food & Dining</option>
+                                        <option value="transport">Transportation</option>
+                                        <option value="entertainment">Entertainment</option>
+                                        <option value="education">Education</option>
+                                        <option value="shopping">Shopping</option>
+                                        <option value="housing">Housing & Utilities</option>
+                                        <option value="health">Health & Wellness</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="expense-date">
+                                        <i class="fas fa-calendar"></i> Date
+                                    </label>
+                                    <input type="date" id="expense-date" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="expense-reason">
+                                        <i class="fas fa-sticky-note"></i> Reason / Description
+                                    </label>
+                                    <textarea id="expense-reason" placeholder="What was this expense for? (e.g., 'Coffee with friends', 'Textbook purchase')" rows="3"></textarea>
+                                    <small class="form-hint">Be specific to track your spending habits better</small>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary btn-large">
+                                        <i class="fas fa-check"></i> Add Expense
+                                    </button>
+                                    <button type="button" id="clear-form" class="btn btn-secondary">
+                                        <i class="fas fa-undo"></i> Clear
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-add-expenses card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-bolt"></i> Quick Add</h3>
+                            <p class="card-subtitle">Common student expenses</p>
+                            <div class="quick-expense-buttons">
+                                <button class="quick-expense-btn" data-amount="3000" data-category="food" data-reason="Coffee">
+                                    <i class="fas fa-coffee"></i> Coffee ₦3,000
+                                </button>
+                                <button class="quick-expense-btn" data-amount="1500" data-category="food" data-reason="Lunch">
+                                    <i class="fas fa-utensils"></i> Lunch ₦1,500
+                                </button>
+                                <button class="quick-expense-btn" data-amount="1000" data-category="transport" data-reason="Bus fare">
+                                    <i class="fas fa-bus"></i> Bus Fare ₦1,000
+                                </button>
+                                <button class="quick-expense-btn" data-amount="5000" data-category="education" data-reason="Textbook">
+                                    <i class="fas fa-book"></i> Textbook ₦5,000
+                                </button>
+                                <button class="quick-expense-btn" data-amount="15000" data-category="entertainment" data-reason="Movie ticket">
+                                    <i class="fas fa-film"></i> Movie ₦15,000
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Page -->
+            <section id="history-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-history"></i> Expense History</h2>
+                    <p class="page-subtitle">Track your spending over time</p>
+                </div>
+                
+                <div class="history-controls">
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label for="filter-month"><i class="fas fa-calendar"></i> Month</label>
+                            <select id="filter-month">
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="filter-category"><i class="fas fa-filter"></i> Category</label>
+                            <select id="filter-category">
+                                <option value="all">All Categories</option>
+                                <option value="food">Food & Dining</option>
+                                <option value="transport">Transportation</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="education">Education</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="housing">Housing & Utilities</option>
+                                <option value="health">Health & Wellness</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <button id="clear-filters" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </button>
+                    </div>
+                    
+                    <div class="history-summary card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-chart-bar"></i> Monthly Summary</h3>
+                            <div class="summary-stats">
+                                <div class="stat">
+                                    <span class="stat-label">Total Expenses:</span>
+                                    <span class="stat-value" id="monthly-total">₦0.00</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Expenses Count:</span>
+                                    <span class="stat-value" id="expenses-count">0</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Average per Expense:</span>
+                                    <span class="stat-value" id="average-expense">₦0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="expenses-list-container">
+                    <div class="expenses-list" id="expenses-list">
+                        <!-- Expenses will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <p>No expenses found for the selected filters</p>
+                            <a href="#expense" class="btn btn-primary">Add Your First Expense</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Savings Page -->
+            <section id="savings-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-piggy-bank"></i> Savings Tracker</h2>
+                    <p class="page-subtitle">Watch your savings grow</p>
+                </div>
+                
+                <div class="savings-content">
+                    <div class="savings-goal-card card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-bullseye"></i> Savings Goal</h3>
+                            <div class="savings-goal-display">
+                                <div class="goal-info">
+                                    <div class="goal-item">
+                                        <span class="goal-label">Monthly Goal:</span>
+                                        <span class="goal-value" id="savings-goal-display">₦0.00</span>
+                                    </div>
+                                    <div class="goal-item">
+                                        <span class="goal-label">Current Savings:</span>
+                                        <span class="goal-value" id="current-savings-display">₦0.00</span>
+                                    </div>
+                                    <div class="goal-item">
+                                        <span class="goal-label">Progress:</span>
+                                        <span class="goal-value" id="savings-progress-percent">0%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill savings-fill" id="savings-progress-fill"></div>
+                                    </div>
+                                    <div class="progress-label">
+                                        <span id="savings-progress-text">₦0.00 of ₦0.00 saved</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="savings-tips card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-lightbulb"></i> Student Savings Tips</h3>
+                            <ul class="tips-list">
+                                <li>
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Cook at home instead of eating out - save up to ₦200/month</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Use student discounts whenever available</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Buy used textbooks or rent them online</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Use public transportation or bike instead of rideshares</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Set up automatic transfers to savings on payday</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="savings-calculator card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-calculator"></i> Savings Calculator</h3>
+                            <p class="card-subtitle">See how small savings add up</p>
+                            
+                            <div class="calculator-form">
+                                <div class="form-group">
+                                    <label for="daily-savings">Daily savings amount (₦)</label>
+                                    <input type="number" id="daily-savings" min="0" step="0.01" value="5.00">
+                                </div>
+                                
+                                <div class="calculator-results">
+                                    <div class="result-item">
+                                        <span class="result-label">Weekly:</span>
+                                        <span class="result-value" id="weekly-savings">₦35.00</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Monthly:</span>
+                                        <span class="result-value" id="monthly-savings">₦150.00</span>
+                                    </div>
+                                    <div class="result-item">
+                                        <span class="result-label">Yearly:</span>
+                                        <span class="result-value" id="yearly-savings">₦1,825.00</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-hint">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Saving just ₦5/day adds up to ₦1,825 in a year!</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Page -->
+            <section id="settings-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-cog"></i> Settings & Profile</h2>
+                    <p class="page-subtitle">Manage your account and preferences</p>
+                </div>
+
+                <div class="settings-container">
+                    <!-- Profile Display -->
+                    <div class="card profile-card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-user-circle"></i> Your Profile</h3>
+                            <div class="profile-display">
+                                <div class="profile-avatar">
+                                    <i id="profile-avatar-icon" class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="profile-info">
+                                    <div class="profile-item">
+                                        <span class="profile-label">Name:</span>
+                                        <span id="profile-name">-</span>
+                                    </div>
+                                    <div class="profile-item">
+                                        <span class="profile-label">Email:</span>
+                                        <span id="profile-email">-</span>
+                                    </div>
+                                    <div class="profile-item">
+                                        <span class="profile-label">Gender:</span>
+                                        <span id="profile-gender">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Profile Form -->
+                    <div class="card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-edit"></i> Edit Profile</h3>
+                            <form id="profile-form">
+                                <div class="form-group">
+                                    <label for="settings-name">Full Name</label>
+                                    <input type="text" id="settings-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="settings-gender">Gender</label>
+                                    <select id="settings-gender">
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                        <option value="prefer-not-to-say">Prefer not to say</option>
+                                    </select>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                    <div class="card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-database"></i> Data Management</h3>
+                            <div class="data-actions">
+                                <button id="export-data-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-download"></i> Export My Data
+                                </button>
+                                <button id="import-data-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-upload"></i> Import Data
+                                </button>
+                                <button id="clear-data-btn" class="btn btn-danger" style="width: 100%;">
+                                    <i class="fas fa-trash-alt"></i> Clear All Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account -->
+                    <div class="card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-sign-out-alt"></i> Account</h3>
+                            <button id="logout-btn" class="btn btn-danger" style="width: 100%;">
+                                <i class="fas fa-sign-out-alt"></i> Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Student Budget Tracker &copy; <span id="current-year">2023</span> | Made for students by students</p>
+            <div class="footer-links">
+                <button id="clear-data" class="footer-link">
+                    <i class="fas fa-trash-alt"></i> Clear All Data
+                </button>
+                <button id="export-data" class="footer-link">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <button id="import-data" class="footer-link">
+                    <i class="fas fa-upload"></i> Import Data
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal for confirmation -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirm Action</h3>
+            <p id="modal-message">Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="modal-confirm" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts - Load in correct order -->
+    <!-- Main app functionality -->
+    <script src="app.js?v=3.0"></script>
+    <script src="dashboard.js?v=3.0"></script>
+    <script src="budget.js?v=3.0"></script>
+    <script src="notifications.js?v=3.0"></script>
+    <script src="expense.js?v=3.0"></script>
+    <script src="history.js?v=3.0"></script>
+    <script src="savings.js?v=3.0"></script>
+    <!-- Authentication and Firebase (after app scripts) -->
+    <script type="module" src="main.js?v=3.0"></script>
+    
+</body>
+</html>
