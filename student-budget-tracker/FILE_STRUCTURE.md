@@ -269,11 +269,11 @@ app.js (global script)
 
 ## Browser Support
 
-- ✅ Chrome/Edge (latest)
-- ✅ Firefox (latest)
-- ✅ Safari (latest)
-- ✅ Mobile browsers
-- ✅ Works offline (localStorage fallback)
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
+- Mobile browsers
+- Works offline (localStorage fallback)
 
 ## Code Style
 

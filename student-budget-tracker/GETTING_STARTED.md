@@ -61,7 +61,7 @@
 4. Click **Create Account**
 5. You should see your dashboard!
 
-## 🎉 Success!
+## Success!
 
 Your app now has cloud sync! Try these:
 
@@ -170,19 +170,19 @@ Data syncs to all devices
 
 ## Security
 
-- ✅ Only you can see your data
-- ✅ Password stored securely in Firebase
-- ✅ No credit card needed
-- ✅ Test mode allows development
-- ✅ Production rules can be added later
+- Only you can see your data
+- Password stored securely in Firebase
+- No credit card needed
+- Test mode allows development
+- Production rules can be added later
 
 ## Next Steps
 
-1. ✅ Get Firebase config
-2. ✅ Update firebase-config.js
-3. ✅ Test signup/login
-4. ✅ Add expenses and verify sync
-5. ✅ Share with friends!
+1. Get Firebase config
+2. Update firebase-config.js
+3. Test signup/login
+4. Add expenses and verify sync
+5. Share with friends!
 
 ---
 
@@ -190,4 +190,4 @@ Data syncs to all devices
 **Difficulty: Easy**
 **Cost: $0 (free Firebase tier)**
 
-Happy budgeting! 💰
+Happy budgeting!

@@ -10,7 +10,7 @@
 // App Configuration
 window.CONFIG = {
     APP_NAME: 'StudentBudgetTracker',
-    VERSION: '1.0.0',
+    VERSION: '1.1.0',
     DEFAULT_CURRENCY: '₦',
     CATEGORIES: {
         'food': { name: 'Food & Dining', icon: 'fas fa-utensils', color: '#ff6b6b' },
@@ -100,30 +100,24 @@ function updateCurrentDate() {
 
 /**
  * Load app data from localStorage
+ * NOTE: Financial data (budget, expenses, savingsGoal) is NO LONGER loaded from localStorage.
+ * Firebase Firestore is the sole source of truth for all financial data.
+ * Only UI preferences are stored in localStorage.
  */
 function loadAppData() {
     try {
-        // Load budget
-        const savedBudget = localStorage.getItem(`${CONFIG.APP_NAME}_budget`);
-        if (savedBudget) {
-            appState.budget = JSON.parse(savedBudget);
-        }
+        // Initialize appState with default values
+        // Financial data will be loaded from Firebase only (monthly-budget-system.js)
+        appState = {
+            currentPage: 'dashboard',
+            budget: null,
+            expenses: [],
+            savingsGoal: 0
+        };
         
-        // Load expenses
-        const savedExpenses = localStorage.getItem(`${CONFIG.APP_NAME}_expenses`);
-        if (savedExpenses) {
-            appState.expenses = JSON.parse(savedExpenses);
-        }
-        
-        // Load savings goal
-        const savedSavingsGoal = localStorage.getItem(`${CONFIG.APP_NAME}_savingsGoal`);
-        if (savedSavingsGoal) {
-            appState.savingsGoal = parseFloat(savedSavingsGoal);
-        }
-        
-        console.log('App data loaded from localStorage');
+        console.log('App data initialized (financial data will load from Firebase Firestore)');
     } catch (error) {
-        console.error('Error loading app data:', error);
+        console.error('Error initializing app data:', error);
         // Initialize with default values
         appState = {
             currentPage: 'dashboard',
@@ -135,36 +129,23 @@ function loadAppData() {
 }
 
 /**
- * Save app data to localStorage (and Firestore if authenticated)
+ * Save app data to localStorage
+ * NOTE: Financial data (budget, expenses, savingsGoal) is NO LONGER saved to localStorage.
+ * All financial data is saved to Firebase Firestore only via monthly-budget-system.js.
+ * localStorage is reserved for UI preferences only.
+ * DEPRECATED: The old Firestore paths (saveBudgetToFirestore, etc.) are no longer used.
  */
 function saveAppData() {
     try {
-        // Always save to localStorage for fallback
-        localStorage.setItem(`${CONFIG.APP_NAME}_budget`, JSON.stringify(appState.budget));
-        localStorage.setItem(`${CONFIG.APP_NAME}_expenses`, JSON.stringify(appState.expenses));
-        localStorage.setItem(`${CONFIG.APP_NAME}_savingsGoal`, appState.savingsGoal.toString());
-        console.log('App data saved to localStorage');
+        // Do NOT save financial data to localStorage anymore
+        // Financial data is managed exclusively by Firebase Firestore monthly system
         
-        // Also save to Firestore if user is authenticated
-        if (window.firebaseAuth && window.firebaseAuth.getCurrentUser()) {
-            const user = window.firebaseAuth.getCurrentUser();
-            const uid = user.uid;
-            
-            if (window.firestoreSync) {
-                // Save budget
-                if (appState.budget) {
-                    window.firestoreSync.saveBudgetToFirestore(uid, appState.budget);
-                }
-                
-                // Save expenses
-                window.firestoreSync.saveExpensesToFirestore(uid, appState.expenses);
-                
-                // Save savings goal
-                window.firestoreSync.saveSavingsGoalToFirestore(uid, appState.savingsGoal);
-            }
-        }
+        // If needed in future, save non-financial UI preferences only to localStorage
+        // Example: UI state, preference flags, etc. (these are not currently needed)
+        
+        console.log('App data sync: Financial data managed by Firebase Firestore');
     } catch (error) {
-        console.error('Error saving app data:', error);
+        console.error('Error in saveAppData:', error);
     }
 }
 
@@ -237,7 +218,7 @@ function setupEventListeners() {
  * Show a specific page and hide others
  * @param {string} pageId - The ID of the page to show
  */
-function showPage(pageId) {
+async function showPage(pageId) {
     // Ensure DOM elements are cached
     if (!domElements.navLinks) {
         cacheDomElements();
@@ -272,14 +253,14 @@ function showPage(pageId) {
     window.location.hash = pageId;
     
     // Trigger page-specific updates
-    updatePageContent(pageId);
+    await updatePageContent(pageId);
 }
 
 /**
  * Update content for the current page
  * @param {string} pageId - The ID of the page to update
  */
-function updatePageContent(pageId) {
+async function updatePageContent(pageId) {
     switch(pageId) {
         case 'dashboard':
             updateDashboard();
@@ -300,7 +281,7 @@ function updatePageContent(pageId) {
             updateHistoryPage();
             break;
         case 'savings':
-            updateSavingsPage();
+            await updateSavingsPage();
             break;
         case 'settings':
             // Profile display is updated in main.js
@@ -394,7 +375,7 @@ function confirmClearData() {
 /**
  * Clear all app data
  */
-function clearAllData() {
+async function clearAllData() {
     appState.budget = null;
     appState.expenses = [];
     appState.savingsGoal = 0;
@@ -403,6 +384,19 @@ function clearAllData() {
     localStorage.removeItem(`${CONFIG.APP_NAME}_budget`);
     localStorage.removeItem(`${CONFIG.APP_NAME}_expenses`);
     localStorage.removeItem(`${CONFIG.APP_NAME}_savingsGoal`);
+    localStorage.removeItem(`${CONFIG.APP_NAME}_migrated_to_firestore`);
+    localStorage.removeItem(`${CONFIG.APP_NAME}_migrated_to_monthly`);
+
+    // Clear Firestore if authenticated
+    const user = window.firebaseAuth?.getCurrentUser?.();
+    let remoteClearSuccess = true;
+    if (user && window.firestoreSync?.clearUserDataFromFirestore) {
+        const result = await window.firestoreSync.clearUserDataFromFirestore(user.uid);
+        if (!result.success) {
+            remoteClearSuccess = false;
+            console.warn('Failed to clear remote data:', result.error);
+        }
+    }
     
     // Update all pages
     updateDashboard();
@@ -410,8 +404,11 @@ function clearAllData() {
     updateHistoryPage();
     updateSavingsPage();
     
-    // Show success message
-    showToast('All data cleared successfully', 'success');
+    if (remoteClearSuccess) {
+        showToast('All data cleared successfully', 'success');
+    } else {
+        showToast('Local data cleared, but remote data could not be cleared.', 'warning');
+    }
 }
 
 /**
@@ -981,7 +978,7 @@ class NotificationSystem {
                     `You've exceeded your monthly budget by ${formatCurrency(totalSpent - budgetAmount)}. Consider reviewing your expenses.`,
                     NOTIFICATION_TYPES.ERROR,
                     NOTIFICATION_TRIGGERS.BUDGET_EXCEEDED
-                );
+                )
             }
         }
     }

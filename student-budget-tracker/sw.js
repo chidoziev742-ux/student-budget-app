@@ -161,7 +161,7 @@ function createOfflineResponse() {
     </head>
     <body>
       <div class="offline-message">
-        <h1>📱 You're Offline</h1>
+        <h1>You're Offline</h1>
         <p>Student Budget Tracker is loading cached content.</p>
         <p>Some features may be limited until you reconnect.</p>
       </div>

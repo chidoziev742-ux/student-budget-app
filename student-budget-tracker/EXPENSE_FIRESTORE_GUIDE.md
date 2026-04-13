@@ -179,7 +179,7 @@ calculateRemainingBalance() {
 
 ## Testing Checklist
 
-### ✅ Add Expense
+### Add Expense
 - [ ] Enter amount, category, date, reason
 - [ ] Click "Add Expense"
 - [ ] Expense appears in dashboard recent list
@@ -188,7 +188,7 @@ calculateRemainingBalance() {
 - [ ] Refresh page → expense still there
 - [ ] Check Firestore console → expense in array
 
-### ✅ Delete Expense
+### Delete Expense
 - [ ] Go to History page
 - [ ] Click trash icon on an expense
 - [ ] Expense disappears from list
@@ -197,7 +197,7 @@ calculateRemainingBalance() {
 - [ ] Refresh page → expense stays deleted
 - [ ] Check Firestore → removed from array
 
-### ✅ Offline Support
+### Offline Support
 - [ ] Turn off internet (DevTools → Network → Offline)
 - [ ] Add expense → still works with localStorage
 - [ ] Turn internet back on → auto-syncs to Firestore
@@ -307,10 +307,10 @@ Every time expenses change, the balance auto-updates:
 
 ## Summary
 
-✅ **Expenses are now properly managed in Firestore arrays**
-✅ **No more overwriting**
-✅ **Async operations ensure consistency**
-✅ **Offline support with localStorage**
-✅ **Proper error handling**
-✅ **Balance updates automatically**
-✅ **Full Firestore sync after all operations**
+**Expenses are now properly managed in Firestore arrays**
+**No more overwriting**
+**Async operations ensure consistency**
+**Offline support with localStorage**
+**Proper error handling**
+**Balance updates automatically**
+**Full Firestore sync after all operations**

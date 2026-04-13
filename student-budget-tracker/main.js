@@ -26,8 +26,32 @@ import {
     updateExpenseInFirestore,
     deleteExpenseFromFirestore,
     loadExpensesFromFirestore,
-    updateBalanceInFirestore
+    updateBalanceInFirestore,
+    migrateOldDataToMonthly,
+    clearUserDataFromFirestore
 } from './firestore-sync.js';
+import {
+    getCurrentMonth,
+    getMonthFromDate,
+    ensureMonthDocumentExists,
+    createMonthIfNotExists,
+    updateBudget,
+    updateSavingsGoal,
+    addIncome,
+    addExpense,
+    addExpenseToMonth,
+    getTotalIncome,
+    getTotalExpenses,
+    getSavings,
+    getMonthData,
+    getMonthlySummary,
+    getAllMonths,
+    deleteIncomeEntry,
+    deleteExpenseEntry,
+    migrateOldExpensesToMonthly,
+    getUserMonthsList,
+    calculateCategorySpent
+} from './monthly-budget-system.js';
 
 // Store imports globally for other scripts
 window.firebaseAuth = { 
@@ -51,7 +75,33 @@ window.firestoreSync = {
     updateExpenseInFirestore,
     deleteExpenseFromFirestore,
     loadExpensesFromFirestore,
-    updateBalanceInFirestore
+    updateBalanceInFirestore,
+    migrateOldDataToMonthly,
+    clearUserDataFromFirestore
+};
+
+// Monthly budget system
+window.monthlyBudget = {
+    getCurrentMonth,
+    getMonthFromDate,
+    ensureMonthDocumentExists,
+    createMonthIfNotExists,
+    updateBudget,
+    updateSavingsGoal,
+    addIncome,
+    addExpense,
+    addExpenseToMonth,
+    getTotalIncome,
+    getTotalExpenses,
+    getSavings,
+    getMonthData,
+    getMonthlySummary,
+    getAllMonths,
+    deleteIncomeEntry,
+    deleteExpenseEntry,
+    migrateOldExpensesToMonthly,
+    getUserMonthsList,
+    calculateCategorySpent
 };
 
 // Track if data needs to be synced to Firestore
@@ -237,7 +287,8 @@ function updateProfileDisplay() {
 }
 
 /**
- * Load user data from Firestore
+ * Load user data - Monthly system only
+ * Financial data is loaded on-demand from users/{uid}/months/{YYYY-MM}
  */
 async function loadUserData() {
     const user = getCurrentUser();
@@ -246,116 +297,41 @@ async function loadUserData() {
         return;
     }
     
-    // Wait for CONFIG if needed
     if (!window.CONFIG) {
-        console.log('CONFIG not available yet, will use defaults');
-        return;
-    }
-    
-    if (!window.appState) {
-        console.log('appState not available yet');
+        console.log('CONFIG not available yet');
         return;
     }
     
     syncToFirestore = true;
     
-    try {
-        // Check if we need to migrate from localStorage
-        const hasMigrated = localStorage.getItem(`${window.CONFIG.APP_NAME}_migrated_to_firestore`);
-        
-        // Load from Firestore
-        const result = await window.firestoreSync.loadBudgetFromFirestore(user.uid);
-        
-        if (result.success) {
-            // Always update appState with Firestore data
-            console.log('Loading data from Firestore...');
-            window.appState.budget = result.data.budget;
-            window.appState.expenses = result.data.expenses || [];
-            window.appState.savingsGoal = result.data.savingsGoal || 0;
-            
-            console.log(`Loaded ${window.appState.expenses.length} expenses from Firestore`);
-            console.log('Budget:', window.appState.budget);
-            console.log('Savings Goal:', window.appState.savingsGoal);
-            
-            // If we have local data but haven't migrated yet, try to migrate
-            if (!hasMigrated && window.appState.expenses.length === 0 && !window.appState.budget) {
-                // Check if there's data in localStorage
-                const localData = localStorage.getItem(`${window.CONFIG.APP_NAME}_appState`);
-                if (localData) {
-                    try {
-                        const parsedData = JSON.parse(localData);
-                        if (parsedData.expenses && parsedData.expenses.length > 0 || parsedData.budget) {
-                            console.log('Found local data, attempting migration...');
-                            const migrationResult = await window.firestoreSync.migrateLocalStorageToFirestore(user.uid, parsedData, window.CONFIG);
-                            if (migrationResult.success) {
-                                // Reload from Firestore to get migrated data
-                                const reloadResult = await window.firestoreSync.loadBudgetFromFirestore(user.uid);
-                                if (reloadResult.success) {
-                                    window.appState.budget = reloadResult.data.budget;
-                                    window.appState.expenses = reloadResult.data.expenses || [];
-                                    window.appState.savingsGoal = reloadResult.data.savingsGoal || 0;
-                                    console.log('Migration completed and reloaded data');
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.warn('Could not parse local data:', e);
-                    }
-                }
-            }
-        } else {
-            console.warn('Failed to load from Firestore:', result.error);
-            // Fall back to localStorage
-            const localData = localStorage.getItem(`${window.CONFIG.APP_NAME}_appState`);
-            if (localData) {
-                try {
-                    const parsedData = JSON.parse(localData);
-                    window.appState.budget = parsedData.budget || null;
-                    window.appState.expenses = parsedData.expenses || [];
-                    window.appState.savingsGoal = parsedData.savingsGoal || 0;
-                    console.log('Loaded from localStorage (Firestore unavailable)');
-                } catch (e) {
-                    console.warn('Could not parse localStorage:', e);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error loading user data:', error);
-        // Try to fall back to localStorage
-        try {
-            const localData = localStorage.getItem(`${window.CONFIG.APP_NAME}_appState`);
-            if (localData) {
-                const parsedData = JSON.parse(localData);
-                window.appState.budget = parsedData.budget || null;
-                window.appState.expenses = parsedData.expenses || [];
-                window.appState.savingsGoal = parsedData.savingsGoal || 0;
-                console.log('Loaded from localStorage (error occurred)');
-            }
-        } catch (e) {
-            console.error('Could not load from localStorage either:', e);
-        }
-    }
+    console.log('[Monthly System] User authenticated. Using monthly documents only.');
+    console.log('[Monthly System] All financial data loads from users/{uid}/months/{YYYY-MM}');
+    
+    // App will load monthly data on-demand in dashboard, budget, and expense pages
+    // No preloading of global state
 }
 
 /**
- * Override saveAppData to sync with Firestore
+ * Setup Firestore sync - only for data clearing operations
+ * All other operations use monthly system directly
  */
 function setupFirestoreSync() {
     const originalSaveAppData = window.saveAppData;
     window.saveAppData = async function() {
         originalSaveAppData();
         
-        // Sync to Firestore if user is authenticated
+        // Only clear operation syncs to Firestore
         const user = getCurrentUser();
         if (user && syncToFirestore) {
             try {
-                if (window.appState.budget) {
-                    await window.firestoreSync.saveBudgetToFirestore(user.uid, window.appState.budget);
+                const isEmptyState = !window.appState.budget && (!window.appState.expenses || window.appState.expenses.length === 0) && (!window.appState.savingsGoal || window.appState.savingsGoal === 0);
+                if (isEmptyState && window.firestoreSync.clearUserDataFromFirestore) {
+                    await window.firestoreSync.clearUserDataFromFirestore(user.uid);
                 }
-                await window.firestoreSync.saveExpensesToFirestore(user.uid, window.appState.expenses);
-                await window.firestoreSync.saveSavingsGoalToFirestore(user.uid, window.appState.savingsGoal);
+                // Otherwise: do NOT sync to old system paths
+                // All financial operations use monthly system directly
             } catch (error) {
-                console.error('Error syncing to Firestore:', error);
+                console.error('Error during firestore operations:', error);
             }
         }
     };

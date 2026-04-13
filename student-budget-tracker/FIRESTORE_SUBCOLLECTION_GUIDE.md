@@ -6,7 +6,7 @@ The expense storage has been refactored from **arrays within documents** to **in
 
 ## New Architecture
 
-### Before (Array in Document - ❌ Unreliable)
+### Before (Array in Document - Unreliable)
 ```
 users/{uid}/budget/data
 ├── income: 50000
@@ -23,7 +23,7 @@ users/{uid}/budget/data
 - Race conditions when multiple operations happen simultaneously
 - Expensive quota usage
 
-### After (Subcollection - ✅ Reliable)
+### After (Subcollection - Reliable)
 ```
 users/{uid}/
 ├── budget/
@@ -53,12 +53,12 @@ users/{uid}/
 ```
 
 **Benefits:**
-- ✅ Each expense is independent
-- ✅ No array conversion issues
-- ✅ Parallel operations are safe
-- ✅ Better quota efficiency
-- ✅ Easier to query/sort expenses
-- ✅ Natural Firestore structure
+- Each expense is independent
+- No array conversion issues
+- Parallel operations are safe
+- Better quota efficiency
+- Easier to query/sort expenses
+- Natural Firestore structure
 
 ## New Functions in firestore-sync.js
 
@@ -295,7 +295,7 @@ service cloud.firestore {
 
 ## Testing Checklist
 
-### ✅ Add Expense
+### Add Expense
 - [ ] Fill form with valid data
 - [ ] Click "Add Expense"
 - [ ] Success toast appears
@@ -304,7 +304,7 @@ service cloud.firestore {
 - [ ] Balance updates automatically
 - [ ] Refresh page → expense still there
 
-### ✅ Edit Expense
+### Edit Expense
 - [ ] Open history page
 - [ ] Click edit on an expense
 - [ ] Change amount/reason
@@ -313,7 +313,7 @@ service cloud.firestore {
 - [ ] Balance recalculates
 - [ ] Refresh page → changes persisted
 
-### ✅ Delete Expense
+### Delete Expense
 - [ ] Click delete button
 - [ ] Success toast appears
 - [ ] Expense disappears from list
@@ -344,7 +344,7 @@ service cloud.firestore {
 4. Updates budget document
 5. Sets migration flag in localStorage
 
-**No manual action required!** ✅
+**No manual action required!**
 
 ## Code Examples
 
@@ -423,13 +423,13 @@ if (result.success) {
 
 ## Summary
 
-✅ **Switched from unreliable array storage to proper Firestore subcollection**
-✅ **Each expense is now an independent document**
-✅ **No more array conversion or push/update/delete issues**
-✅ **Individual operations are safe and fast**
-✅ **Balance auto-updates after any change**
-✅ **Seamless migration from old structure**
-✅ **Full offline support with auto-sync**
-✅ **Better quota efficiency**
+**Switched from unreliable array storage to proper Firestore subcollection**
+**Each expense is now an independent document**
+**No more array conversion or push/update/delete issues**
+**Individual operations are safe and fast**
+**Balance auto-updates after any change**
+**Seamless migration from old structure**
+**Full offline support with auto-sync**
+**Better quota efficiency**
 
-The app is now using Firebase best practices! 🚀
+The app is now using Firebase best practices!

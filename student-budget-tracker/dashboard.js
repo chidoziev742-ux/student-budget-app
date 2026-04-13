@@ -1,20 +1,43 @@
+let dashboardMonthData = null;
+
 // --- Calculation functions ---
-function calculateTotalExpenses() {
-    return appState.expenses.reduce((sum, e) => sum + e.amount, 0);
+function calculateTotalExpenses(expenses) {
+    return (expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 }
 
-function calculateRemainingBalance() {
-    return (appState.budget?.amount || 0) - calculateTotalExpenses();
+function calculateRemainingBalance(totalBudget, expenses) {
+    return (totalBudget || 0) - calculateTotalExpenses(expenses);
 }
 
-// If you want savings to reflect actual leftover money:
-function calculateCurrentSavings() {
-    // Savings = money left after expenses, cannot be negative
-    return Math.max(calculateRemainingBalance(), 0);
+async function loadDashboardMonthData() {
+    const user = window.firebaseAuth?.getCurrentUser?.();
+    const currentMonth = window.monthlyBudget?.getCurrentMonth?.();
+    const fallbackData = {
+        success: false,
+        month: currentMonth || null,
+        budget: 0,
+        income: [],
+        expenses: [],
+        totalIncome: 0,
+        totalExpenses: 0,
+        savings: 0,
+        budgetByCategory: {},
+        spentByCategory: {},
+        remainingByCategory: {}
+    };
+
+    if (!user || !window.monthlyBudget?.getMonthData || !currentMonth) {
+        dashboardMonthData = fallbackData;
+        return;
+    }
+
+    const result = await window.monthlyBudget.getMonthData(user.uid, currentMonth);
+    dashboardMonthData = result?.success ? result : fallbackData;
 }
 
 // --- Dashboard update ---
-function updateDashboard() {
+async function updateDashboard() {
+    await loadDashboardMonthData();
     updateSummaryCards();
     updateRecentExpenses();
     updateCategoryBreakdown();
@@ -22,10 +45,11 @@ function updateDashboard() {
 
 // --- Summary cards ---
 function updateSummaryCards() {
-    const totalBudget = appState.budget?.amount || 0;
-    const totalSpent = calculateTotalExpenses();
-    const remainingBalance = calculateRemainingBalance();
-    const totalSavings = calculateCurrentSavings(); // <-- updated
+    const totalBudget = dashboardMonthData?.budget || 0;
+    const expenses = dashboardMonthData?.expenses || [];
+    const totalSpent = calculateTotalExpenses(expenses);
+    const remainingBalance = calculateRemainingBalance(totalBudget, expenses);
+    const totalSavings = dashboardMonthData?.savings || 0;
 
     const totalBudgetEl = document.getElementById('total-budget');
     const remainingBalanceEl = document.getElementById('remaining-balance');
@@ -40,7 +64,16 @@ function updateSummaryCards() {
         else remainingBalanceEl.style.color = '#4cc9f0';
     }
     if (totalSpentEl) totalSpentEl.textContent = formatCurrency(totalSpent);
-    if (totalSavingsEl) totalSavingsEl.textContent = formatCurrency(totalSavings);
+    if (totalSavingsEl) {
+        totalSavingsEl.textContent = formatCurrency(totalSavings);
+        if (totalSavings < 0) {
+            totalSavingsEl.style.color = '#f72585';
+        } else if (totalSavings > 0) {
+            totalSavingsEl.style.color = '#4cc9f0';
+        } else {
+            totalSavingsEl.style.color = '#6c757d';
+        }
+    }
 }
 
 // --- Recent expenses ---
@@ -48,7 +81,8 @@ function updateRecentExpenses() {
     const container = document.getElementById('recent-expenses');
     if (!container) return;
 
-    const recentExpenses = [...appState.expenses]
+    const expenses = dashboardMonthData?.expenses || [];
+    const recentExpenses = [...expenses]
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, 5);
 
@@ -87,11 +121,12 @@ function updateCategoryBreakdown() {
 
     const categoryTotals = {};
     let totalSpent = 0;
+    const expenses = dashboardMonthData?.expenses || [];
 
-    appState.expenses.forEach(expense => {
+    expenses.forEach(expense => {
         const cat = expense.category || 'other';
-        categoryTotals[cat] = (categoryTotals[cat] || 0) + expense.amount;
-        totalSpent += expense.amount;
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + (Number(expense.amount) || 0);
+        totalSpent += Number(expense.amount) || 0;
     });
 
     if (totalSpent === 0) {
@@ -121,9 +156,9 @@ function updateCategoryBreakdown() {
 }
 
 // --- Initialize dashboard on page load ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if (document.getElementById('dashboard-page')) {
-        updateDashboard();
+        await updateDashboard();
     }
 });
 

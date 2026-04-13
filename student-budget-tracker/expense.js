@@ -84,7 +84,7 @@ async function handleExpenseSubmit(e) {
             updateDashboard();
             updateBudgetPage();
             updateHistoryPage();
-            updateSavingsPage();
+            await updateSavingsPage();
             
             // Trigger notification
             triggerExpenseNotifications();
@@ -276,7 +276,7 @@ window.deleteExpenseFromUI = async function(expenseId) {
         updateDashboard();
         updateBudgetPage();
         updateHistoryPage();
-        updateSavingsPage();
+        await updateSavingsPage();
         showToast('Expense deleted successfully', 'success');
     } else {
         showToast(`Failed to delete expense: ${result.error}`, 'error');
@@ -289,5 +289,92 @@ window.deleteExpenseFromUI = async function(expenseId) {
 function triggerExpenseNotifications() {
     if (typeof triggerBudgetNotification === 'function') {
         triggerBudgetNotification();
+    }
+}
+
+// =====================================================
+// ENHANCED MONTHLY EXPENSE SYSTEM (New Features)
+// =====================================================
+
+/**
+ * Add expense to the monthly structure
+ * This is the new way - keeps track of which month the expense belongs to
+ */
+async function addExpenseToMonthly(expenseData) {
+    try {
+        const user = window.firebaseAuth?.getCurrentUser?.();
+        
+        if (!user) {
+            showToast('Please sign in first', 'error');
+            return { success: false, error: 'Not authenticated' };
+        }
+        
+        // Get current month
+        const month = window.monthlyBudget?.getCurrentMonth?.();
+        if (!month) {
+            return { success: false, error: 'Cannot determine current month' };
+        }
+        
+        // Add to monthly structure
+        const result = await window.monthlyBudget?.addExpenseToMonth?.(user.uid, month, expenseData);
+        
+        if (result?.success) {
+            // Also maintain backward compatibility - add to old structure
+            if (window.firestoreSync?.addExpenseToFirestore) {
+                await window.firestoreSync.addExpenseToFirestore(user.uid, expenseData);
+            }
+            
+            // Update appState for local UI
+            appState.expenses.push({
+                id: result.expenseEntry.id,
+                ...expenseData
+            });
+            saveAppData();
+            
+            // Monthly expense tracking does not reduce category budgets directly.
+            // Legacy balance updates are intentionally skipped here.
+            return { success: true, id: result.expenseEntry.id };
+        } else {
+            return result;
+        }
+    } catch (error) {
+        console.error('Error adding expense to monthly structure:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Delete expense from monthly structure
+ */
+async function deleteExpenseFromMonthly(month, expenseId) {
+    try {
+        const user = window.firebaseAuth?.getCurrentUser?.();
+        
+        if (!user) {
+            showToast('Please sign in first', 'error');
+            return { success: false, error: 'Not authenticated' };
+        }
+        
+        // Delete from monthly structure
+        const result = await window.monthlyBudget?.deleteExpenseEntry?.(user.uid, month, expenseId);
+        
+        if (result?.success) {
+            // Also delete from old structure for backward compatibility
+            if (window.firestoreSync?.deleteExpenseFromFirestore) {
+                await window.firestoreSync.deleteExpenseFromFirestore(user.uid, expenseId);
+            }
+            
+            // Update appState
+            appState.expenses = appState.expenses.filter(exp => exp.id !== expenseId);
+            saveAppData();
+            
+            // Monthly history remains isolated; legacy balance updates are skipped here.
+            return { success: true };
+        } else {
+            return result;
+        }
+    } catch (error) {
+        console.error('Error deleting expense from monthly structure:', error);
+        return { success: false, error: error.message };
     }
 }

@@ -7,9 +7,9 @@ Your app has been fixed, but your browser may still be serving **old cached vers
 1. **Press `Ctrl+Shift+Delete`** (this opens the Clear Browsing Data dialog)
 2. Select **Time range: All time** (dropdown at top)
 3. **CHECK all boxes:**
-   - ✅ Cookies and other site data
-   - ✅ Cached images and files
-   - ✅ Hosted app data
+   -  Cookies and other site data
+   -  Cached images and files
+   - Hosted app data
 4. Click **Clear data**
 
 ## Step 2: Unregister Service Worker
@@ -53,7 +53,7 @@ Your app has been fixed, but your browser may still be serving **old cached vers
 
 Open the **Browser Console** (F12 → Console tab) and look for:
 
-**✅ Expected messages:**
+**Expected messages:**
 ```
 DOMContentLoaded - Starting app initialization
 CONFIG loaded successfully: StudentBudgetTracker
@@ -61,7 +61,7 @@ CONFIG loaded successfully: StudentBudgetTracker
 [Firestore] Loading expenses from Firestore...
 ```
 
-**❌ Should NOT see:**
+**Should NOT see:**
 ```
 Uncaught SyntaxError: Identifier 'domElements' has already been declared
 app.js:1 Uncaught SyntaxError: Identifier 'savingsStyles' has already been declared
@@ -91,10 +91,10 @@ Once cache is cleared:
 3. **Set a budget** (e.g., $1000)
 4. **Add an expense** (e.g., Food: $50)
 5. **Check the dashboard:**
-   - ✅ Budget should display
-   - ✅ Total spent should show
-   - ✅ Remaining balance should show
-   - ✅ Savings goal section should appear
+   - Budget should display
+   - Total spent should show
+   - Remaining balance should show
+   - Savings goal section should appear
 
 ## Advanced: Nuclear Option (Complete Browser Reset)
 
@@ -160,7 +160,7 @@ After completing all steps, verify:
 - [ ] Can sign up and see dashboard
 - [ ] Budget, expenses, and savings all display correctly
 
-If ALL checkboxes pass ✅, the app is fixed!
+If ALL checkboxes pass, the app is fixed!
 
 ---
 

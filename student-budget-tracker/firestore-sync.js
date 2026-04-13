@@ -34,40 +34,31 @@ import {
     orderBy
 } from './firebase-config.js';
 
+import {
+    getCurrentMonth,
+    addExpenseToMonth
+} from './monthly-budget-system.js';
+
 /**
- * Save budget to Firestore
+ * DEPRECATED: saveBudgetToFirestore
+ * Old system is no longer used. All data is stored in users/{uid}/months/{YYYY-MM}
+ * This function is kept for backwards compatibility only and should not be called.
  */
 export async function saveBudgetToFirestore(uid, budget) {
-    try {
-        const budgetData = {
-            income: budget.amount || 0,
-            savings: 0, // Will be managed separately
-            balance: budget.amount || 0,
-            createdAt: budget.setDate || new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        await setDoc(
-            doc(db, 'users', uid, 'budget', 'data'),
-            budgetData,
-            { merge: true }
-        );
-
-        return { success: true };
-    } catch (error) {
-        console.error('Error saving budget to Firestore:', error);
-        return { success: false, error: error.message };
-    }
+    console.warn('[Firestore] saveBudgetToFirestore is DEPRECATED. Use monthly system instead.');
+    return { success: true };
 }
 
 /**
- * Add a single expense as a new document in subcollection
+ * Add a single expense to the current month's document
+ * UPDATED: Now uses monthly-budget-system which stores expenses in users/{uid}/months/{YYYY-MM}
  */
 export async function addExpenseToFirestore(uid, expense) {
     try {
-        const expensesRef = collection(db, 'users', uid, 'expenses');
+        const month = getCurrentMonth();
         
-        const docRef = await addDoc(expensesRef, {
+        // Use the monthly system to add expense
+        const result = await addExpenseToMonth(uid, month, {
             amount: expense.amount,
             category: expense.category,
             date: expense.date,
@@ -75,10 +66,14 @@ export async function addExpenseToFirestore(uid, expense) {
             addedDate: new Date().toISOString()
         });
 
-        console.log('Expense added with ID:', docRef.id);
-        return { success: true, id: docRef.id };
+        if (result.success) {
+            console.log('Expense added to monthly system for', month);
+            return { success: true, id: result.expenseEntry?.id || Date.now().toString() };
+        } else {
+            throw new Error(result.error);
+        }
     } catch (error) {
-        console.error('Error adding expense to Firestore:', error);
+        console.error('Error adding expense to Firebase monthly system:', error);
         return { success: false, error: error.message };
     }
 }
@@ -155,103 +150,40 @@ export async function loadExpensesFromFirestore(uid) {
 }
 
 /**
- * Save expenses to Firestore (for backward compatibility with old code)
- * NOTE: This function is deprecated - use addExpenseToFirestore instead
- * Kept for migration purposes only
+ * DEPRECATED: saveExpensesToFirestore
+ * Old system is no longer used. All data is stored in users/{uid}/months/{YYYY-MM}
+ * This function is kept for backwards compatibility only and should not be called.
  */
 export async function saveExpensesToFirestore(uid, expenses) {
-    try {
-        // This is now only used for the budget document metadata
-        await setDoc(
-            doc(db, 'users', uid, 'budget', 'data'),
-            {
-                updatedAt: new Date().toISOString()
-            },
-            { merge: true }
-        );
-
-        return { success: true };
-    } catch (error) {
-        console.error('Error saving expenses metadata:', error);
-        return { success: false, error: error.message };
-    }
+    console.warn('[Firestore] saveExpensesToFirestore is DEPRECATED. Use monthly system instead.');
+    return { success: true };
 }
 
 /**
- * Save savings goal to Firestore
+ * DEPRECATED: saveSavingsGoalToFirestore
+ * Old system is no longer used. All data is stored in users/{uid}/months/{YYYY-MM}
+ * This function is kept for backwards compatibility only and should not be called.
  */
 export async function saveSavingsGoalToFirestore(uid, savingsGoal) {
-    try {
-        await setDoc(
-            doc(db, 'users', uid, 'budget', 'data'),
-            {
-                savingsGoal: savingsGoal || 0,
-                updatedAt: new Date().toISOString()
-            },
-            { merge: true }
-        );
-
-        return { success: true };
-    } catch (error) {
-        console.error('Error saving savings goal to Firestore:', error);
-        return { success: false, error: error.message };
-    }
+    console.warn('[Firestore] saveSavingsGoalToFirestore is DEPRECATED. Use monthly system instead.');
+    return { success: true };
 }
 
 /**
- * Load budget data from Firestore
- * Now also loads expenses from subcollection
+ * DEPRECATED: loadBudgetFromFirestore
+ * Old system is no longer used. All data is stored in users/{uid}/months/{YYYY-MM}
+ * This function is kept for backwards compatibility only and should not be called.
  */
 export async function loadBudgetFromFirestore(uid) {
-    try {
-        console.log(`[Firestore] Loading budget from users/${uid}/budget/data`);
-        const budgetDoc = await getDoc(doc(db, 'users', uid, 'budget', 'data'));
-        console.log('[Firestore] Budget document:', budgetDoc.exists() ? 'EXISTS' : 'NOT FOUND');
-        
-        // Load expenses from subcollection
-        console.log(`[Firestore] Loading expenses from users/${uid}/expenses/`);
-        const expensesResult = await loadExpensesFromFirestore(uid);
-        
-        if (budgetDoc.exists()) {
-            const data = budgetDoc.data();
-            console.log('[Firestore] Budget data:', data);
-            return {
-                success: true,
-                data: {
-                    budget: {
-                        amount: data.income || 0,
-                        setDate: data.createdAt,
-                        category: null
-                    },
-                    expenses: expensesResult.expenses,
-                    savingsGoal: data.savingsGoal || 0
-                }
-            };
-        } else {
-            // Document doesn't exist yet
-            console.log('[Firestore] Budget document does not exist, returning empty data');
-            return {
-                success: true,
-                data: {
-                    budget: null,
-                    expenses: expensesResult.expenses,
-                    savingsGoal: 0
-                }
-            };
+    console.warn('[Firestore] loadBudgetFromFirestore is DEPRECATED. Use monthly system instead.');
+    return {
+        success: true,
+        data: {
+            budget: null,
+            expenses: [],
+            savingsGoal: 0
         }
-    } catch (error) {
-        console.error('[Firestore] Error loading budget:', error.code, error.message);
-        console.warn('Could not load budget from Firestore (may be offline):', error.message);
-        // Return success with empty data - will use localStorage fallback
-        return {
-            success: true,
-            data: {
-                budget: null,
-                expenses: [],
-                savingsGoal: 0
-            }
-        };
-    }
+    };
 }
 
 /**
@@ -322,6 +254,34 @@ export async function migrateLocalStorageToFirestore(uid, appState, CONFIG) {
 }
 
 /**
+ * Clear all Firestore user budget and expense data
+ */
+export async function clearUserDataFromFirestore(uid) {
+    try {
+        // Delete budget document
+        await deleteDoc(doc(db, 'users', uid, 'budget', 'data'));
+
+        // Delete all expense documents
+        const expensesRef = collection(db, 'users', uid, 'expenses');
+        const expensesSnapshot = await getDocs(expensesRef);
+        const expenseDeletes = expensesSnapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
+        await Promise.all(expenseDeletes);
+
+        // Delete all monthly documents
+        const monthsRef = collection(db, 'users', uid, 'months');
+        const monthsSnapshot = await getDocs(monthsRef);
+        const monthDeletes = monthsSnapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
+        await Promise.all(monthDeletes);
+
+        console.log('Cleared user Firestore data for', uid);
+        return { success: true };
+    } catch (error) {
+        console.error('Error clearing Firestore user data:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Calculate balance and update in Firestore
  */
 export async function updateBalanceInFirestore(uid, appState) {
@@ -339,4 +299,15 @@ export async function updateBalanceInFirestore(uid, appState) {
         console.error('Error updating balance:', error);
         return { success: false, error: error.message };
     }
+}
+
+/**
+ * DEPRECATED: migrateOldDataToMonthly
+ * All users must now use monthly system exclusively.
+ * This function is kept for backwards compatibility only and should not be called.
+ * Migration is one-time only via localStorage flag.
+ */
+export async function migrateOldDataToMonthly(uid, appState) {
+    console.warn('[Firestore] migrateOldDataToMonthly is disabled. App uses monthly system exclusively.');
+    return { success: true, migrated: false };
 }

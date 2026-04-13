@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Budget Tracker</title>
     <link rel="stylesheet" href="styles.css?v=2.1">
+    <link rel="stylesheet" href="styles-monthly.css?v=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     
@@ -93,8 +94,8 @@
         <!-- Header -->
         <header class="app-header" style="display: flex !important; justify-content: space-between !important; align-items: center !important; flex-wrap: wrap; gap: 1.5rem;">
             <div class="header-actions" style="order: 1; display: flex; align-items: center;">
-                <button id="settings-btn" class="header-btn" title="Settings">
-                    <i class="fas fa-cog"></i>
+                <button id="settings-btn" class="header-btn" title="got to make it 👊🏿">
+                    <p>🪙</p>
                 </button>
             </div>
             <div class="header-content" style="order: 2; flex: 1; text-align: center; padding: 0 1rem;">
@@ -239,6 +240,19 @@
                     <p class="page-subtitle">Define your monthly spending limit</p>
                 </div>
                 
+                <!-- Month Selector (NEW FEATURE) -->
+                <div class="card" id="month-selector-card">
+                    <div class="card-content">
+                        <label for="month-selector">
+                            <i class="fas fa-calendar-check"></i> Select Month
+                        </label>
+                        <select id="month-selector" class="month-select">
+                            <option value="">Loading...</option>
+                        </select>
+                        <small class="form-hint">Switch between months to view and edit data</small>
+                    </div>
+                </div>
+                
                 <div class="budget-form-container">
                     <div class="card">
                         <div class="card-content">
@@ -283,6 +297,61 @@
                                 <div class="form-actions">
                                     <button type="submit" class="btn btn-primary btn-large">
                                         <i class="fas fa-save"></i> Save Budget
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Income Display (NEW FEATURE) -->
+                    <div class="card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-coins"></i> Monthly Income</h3>
+                            <div class="income-summary">
+                                <div class="income-total">
+                                    <span class="label">Total Income:</span>
+                                    <span class="value" id="total-income-display">₦0.00</span>
+                                </div>
+                                <div id="income-list" class="income-list">
+                                    <p class="empty-state">No income recorded yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Income Form (NEW FEATURE) -->
+                    <div class="card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-plus"></i> Add Income</h3>
+                            <form id="income-form" onsubmit="handleAddIncome(event)">
+                                <div class="form-group">
+                                    <label for="income-amount">
+                                        <i class="fas fa-coins"></i> Income Amount
+                                    </label>
+                                    <div class="input-with-icon">
+                                        <span class="currency-symbol">₦</span>
+                                        <input type="number" id="income-amount" step="0.01" min="0" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="income-source">
+                                        <i class="fas fa-briefcase"></i> Income Source
+                                    </label>
+                                    <input type="text" id="income-source" placeholder="e.g., Salary, Freelance, Allowance" required>
+                                    <small class="form-hint">Where did this income come from?</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="income-date">
+                                        <i class="fas fa-calendar"></i> Date Received
+                                    </label>
+                                    <input type="date" id="income-date" required>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-success btn-large">
+                                        <i class="fas fa-plus"></i> Add Income
                                     </button>
                                 </div>
                             </form>
@@ -477,7 +546,44 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Monthly History View (NEW FEATURE) -->
+                <div class="monthly-history-section card" style="margin-top: 2rem;">
+                    <div class="card-content">
+                        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3><i class="fas fa-archive"></i> Monthly History</h3>
+                            <button class="btn btn-sm btn-secondary" onclick="window.refreshMonthHistory?.()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="months-history-container" class="months-history-grid">
+                            <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading months...</div>
+                        </div>
+                    </div>
+                </div>
             </section>
+            
+            <!-- Month Details Modal (NEW FEATURE) -->
+            <div id="month-details-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="month-details-title">Month Details</h2>
+                        <span class="close-modal" onclick="this.closest('.modal').style.display='none'">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="month-details-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                            <!-- Summary stats will be filled here -->
+                        </div>
+                        <div class="month-income-list" style="margin-bottom: 2rem;">
+                            <!-- Income items will be filled here -->
+                        </div>
+                        <div class="month-expenses-list">
+                            <!-- Expense items will be filled here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Savings Page -->
             <section id="savings-page" class="page">
@@ -711,6 +817,7 @@
     <script src="notifications.js?v=3.0"></script>
     <script src="expense.js?v=3.0"></script>
     <script src="history.js?v=3.0"></script>
+    <script src="history-monthly.js?v=3.0"></script>
     <script src="savings.js?v=3.0"></script>
     <!-- Authentication and Firebase (after app scripts) -->
     <script type="module" src="main.js?v=3.0"></script>
