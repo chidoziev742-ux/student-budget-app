@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to access their profile data
+    match /users/{uid}/profile/data {
+      allow read, write: if request.auth.uid == uid;
+    }
+    
+    // Allow authenticated users to access their budget data
+    match /users/{uid}/budget/data {
+      allow read, write: if request.auth.uid == uid;
+    }
+    
+    // Allow authenticated users to access any document in their budget subcollection
+    match /users/{uid}/budget/{document=**} {
+      allow read, write: if request.auth.uid == uid;
+    }
+    
+    // Allow authenticated users to access their expenses subcollection
+    match /users/{uid}/expenses/{expenseId} {
+      allow read, write: if request.auth.uid == uid;
+    }
+    
+    // Allow authenticated users to access any document in their expenses subcollection
+    match /users/{uid}/expenses/{document=**} {
+      allow read, write: if request.auth.uid == uid;
+    }
+    
+    // Fallback: deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

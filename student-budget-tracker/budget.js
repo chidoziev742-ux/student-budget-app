@@ -274,7 +274,7 @@ function updateMonthlyExpensesSummary(monthData) {
         // Show top 5 expenses for this month
         const topExpenses = monthData.expenses.slice(0, 5);
         expensesList.innerHTML = topExpenses.map(exp => {
-            const category = CONFIG.CATEGORIES?.[exp.category] || { 
+            const category = window.getExpenseCategoryMeta?.(exp.category) || CONFIG.CATEGORIES?.[exp.category] || { 
                 name: exp.category || 'Other', 
                 color: '#ccc', 
                 icon: 'fas fa-tag' 

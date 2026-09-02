@@ -237,7 +237,7 @@ function updateMonthDetailsModal(monthData) {
             expensesList.innerHTML = `
                 <h3>Expenses (${monthData.expenses.length})</h3>
                 ${monthData.expenses.map(exp => {
-                    const category = CONFIG.CATEGORIES?.[exp.category] || { 
+                    const category = window.getExpenseCategoryMeta?.(exp.category) || CONFIG.CATEGORIES?.[exp.category] || { 
                         name: exp.category, 
                         icon: 'fas fa-tag',
                         color: '#ccc'

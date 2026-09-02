@@ -40,17 +40,74 @@ async function loadSavingsMonthData() {
 function calculateCurrentSavings() {
     if (!savingsMonthData) return 0;
 
-    const totalIncome = savingsMonthData.totalIncome || 0;
-    const totalSpent = savingsMonthData.totalExpenses || 0;
-    const budget = savingsMonthData.budget || 0;
+    const actualSaved = Number(savingsMonthData.savedAmount ?? savingsMonthData.savings ?? 0);
+    return Math.max(actualSaved, 0);
+}
 
-    // If we have income data, use income - expenses
-    if (totalIncome > 0) {
-        return Math.max(totalIncome - totalSpent, 0);
+async function handleAddSavingsSubmit(event) {
+    event.preventDefault();
+
+    const user = window.firebaseAuth?.getCurrentUser?.();
+    if (!user) {
+        showToast('Please sign in first', 'error');
+        return;
     }
 
-    // Otherwise, fall back to remaining balance (budget - expenses)
-    return Math.max(budget - totalSpent, 0);
+    const form = event.currentTarget;
+    const amountInput = form.querySelector('#savings-amount');
+    const noteInput = form.querySelector('#savings-note');
+    const goalSelect = form.querySelector('#savings-goal-select');
+    const amount = Number(amountInput?.value || 0);
+    const note = noteInput?.value?.trim() || '';
+    const goalId = goalSelect?.value || null;
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        showToast('Please enter a valid savings amount', 'error');
+        amountInput?.focus();
+        return;
+    }
+
+    const month = window.monthlyBudget?.getCurrentMonth?.();
+    const result = await window.monthlyBudget?.addSavingsToGoal?.(user.uid, month, { amount, goalId, note });
+
+    if (result?.success) {
+        form.reset();
+        showToast('Savings added successfully', 'success');
+
+        if (window.notificationSystem?.recordSavingsContribution) {
+            const goalName = savingsMonthData?.savingsGoal > 0 ? (window.currentUser?.profile?.goal_name || 'your goal') : 'your goal';
+            await window.notificationSystem.recordSavingsContribution({ amount, goalName, goalId: goalId || null });
+            await window.notificationSystem.syncSavingsNotifications();
+        }
+
+        await updateSavingsPage();
+        if (window.updateDashboard) {
+            await window.updateDashboard();
+        } else {
+            updateDashboard();
+        }
+    } else {
+        showToast(result?.error || 'Failed to add savings', 'error');
+    }
+}
+
+function populateSavingsGoalSelect() {
+    const select = document.getElementById('savings-goal-select');
+    if (!select) return;
+
+    const goalValue = Number(savingsMonthData?.savingsGoal || 0);
+    const currentGoal = goalValue > 0 ? `Current goal (${formatCurrency(goalValue)})` : 'No savings goal created yet';
+
+    select.innerHTML = `
+        <option value="">${currentGoal}</option>
+    `;
+
+    if (goalValue > 0) {
+        const option = document.createElement('option');
+        option.value = 'current';
+        option.textContent = `Current savings goal · ${formatCurrency(goalValue)}`;
+        select.appendChild(option);
+    }
 }
 
 /**
@@ -59,10 +116,19 @@ function calculateCurrentSavings() {
 async function updateSavingsPage() {
     // Load current month data first
     await loadSavingsMonthData();
+    populateSavingsGoalSelect();
     await updateSavingsGoalDisplay();
     // If you had a calculator section, you can implement it here
     if (typeof updateSavingsCalculator === 'function') updateSavingsCalculator();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('add-savings-form');
+    if (form) {
+        form.addEventListener('submit', handleAddSavingsSubmit);
+    }
+    updateSavingsPage();
+});
 
 /**
  * Update savings goal display

@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Budget Tracker</title>
-    <link rel="stylesheet" href="styles.css?v=2.1">
-    <link rel="stylesheet" href="styles-monthly.css?v=1.0">
+    <link rel="stylesheet" href="styles.css?v=3.1">
+    <link rel="stylesheet" href="styles-monthly.css?v=1.1">
+    <link rel="stylesheet" href="dashboard-styles.css?v=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     
@@ -33,77 +34,834 @@
     </script>
 </head>
 <body>
-    <!-- Authentication Screen -->
-    <div id="auth-screen" class="auth-screen" style="display: none;">
-        <div class="auth-container">
-            <div class="auth-logo">
-                <i class="fas fa-graduation-cap"></i>
-                <h1>Student Budget Tracker</h1>
+    <!--
+     V2 AUTHENTICATION SCREEN
+-->
+<div id="auth-screen" class="auth-screen" style="display: none;">
+    <div class="auth-container">
+        <aside class="auth-logo">
+            <!-- <i class="fas fa-wallet"></i> -->
+             <img src="ChatGPT Image Aug 29, 2026, 06_43_48 PM.png" alt="">
+            <h1>Student Budget</h1>
+
+            <div class="auth-brand-content">
+                <span class="auth-kicker">YOUR MONEY. YOUR PLAN.</span>
+
+                <h2>
+                    Take control of
+                    <span>your student money.</span>
+                </h2>
+
+                <p>
+                    Keep track of your spending, manage your budget,
+                    and work towards the things that matter to you.
+                </p>
             </div>
 
-            <!-- Login Form -->
-            <form id="login-form-element" class="auth-form active">
-                <h2>Sign In</h2>
-                <div class="form-group">
-                    <label for="login-email">Email Address</label>
-                    <input type="email" id="login-email" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Password</label>
-                    <input type="password" id="login-password" placeholder="Enter your password" required>
-                </div>
-                <div id="login-error" class="error-message"></div>
-                <button type="submit" class="btn btn-primary btn-large">Sign In</button>
-                <p class="auth-switch">Don't have an account? <a href="#" onclick="window.switchAuthForm('signup'); return false;">Create one</a></p>
-            </form>
+            <div class="auth-brand-footer">
+                <span>Built for students</span>
+                <span>•</span>
+                <span>Simple. Smart. Yours.</span>
+            </div>
+        </aside>
 
-            <!-- Signup Form -->
-            <form id="signup-form-element" class="auth-form">
-                <h2>Create Account</h2>
-                <div class="form-group">
-                    <label for="signup-name">Full Name</label>
-                    <input type="text" id="signup-name" placeholder="Enter your full name" required>
+        <div class="auth-card">
+            <!-- ================= LOGIN ================= -->
+            <form id="login-form-element" class="auth-form active">
+
+                    <div class="auth-heading">
+
+                        <span class="auth-eyebrow">
+                            WELCOME BACK
+                        </span>
+
+                        <h2>
+                            Good to see you again 👋
+                        </h2>
+
+                        <p>
+                            Sign in to continue managing your money.
+                        </p>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="login-email">
+                            Email Address
+                        </label>
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                id="login-email"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <div class="password-label-row">
+
+                            <label for="login-password">
+                                Password
+                            </label>
+
+                            <a
+                                href="#"
+                                class="forgot-password"
+                                onclick="return false;"
+                            >
+                                <!-- Forgot password? -->
+                            </a>
+
+                        </div>
+
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="login-password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+                            <button type="button" class="password-toggle" aria-label="Show password" title="Show password">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="login-error"
+                        class="error-message"
+                    ></div>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary btn-large auth-submit"
+                    >
+                        <span class="auth-spinner" aria-hidden="true" hidden>
+                            <i class="fas fa-spinner"></i>
+                        </span>
+                        <span class="auth-button-text">Sign In</span>
+                        <i class="fas fa-arrow-right auth-arrow"></i>
+                    </button>
+
+
+                    <p class="auth-switch">
+
+                        Don't have an account?
+
+                        <a
+                            href="#"
+                            onclick="window.switchAuthForm('signup'); return false;"
+                        >
+                            Create one
+                        </a>
+
+                    </p>
+
+                    <p class="auth-switch">
+                        <a
+                            href="#"
+                            onclick="window.switchAuthForm('forgot-password'); return false;"
+                            id="forgot-password-link"
+                        >
+                            Forgot password?
+                        </a>
+                    </p>
+
+                </form>
+
+
+
+                <!-- ================= FORGOT PASSWORD ================= -->
+                <form
+                    id="forgot-password-form-element"
+                    class="auth-form"
+                    style="display: none;"
+                >
+
+                    <div class="auth-heading">
+
+                        <span class="auth-eyebrow">
+                            RESET PASSWORD
+                        </span>
+
+                        <h2>
+                            Forgot your password? 🔑
+                        </h2>
+
+                        <p>
+                            Enter your email address and we'll send you a link to reset your password.
+                        </p>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="forgot-password-email">
+                            Email Address
+                        </label>
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                id="forgot-password-email"
+                                placeholder="Enter your email address"
+                                required
+                            >
+
+                        </div>
+
+                        <small
+                            class="error-message"
+                            id="forgot-password-error"
+                        ></small>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary btn-large auth-submit"
+                    >
+                        <span class="auth-spinner" aria-hidden="true" hidden>
+                            <i class="fas fa-spinner"></i>
+                        </span>
+                        <span class="auth-button-text">Send Reset Link</span>
+                        <i class="fas fa-arrow-right auth-arrow"></i>
+                    </button>
+
+                    <p class="auth-switch">
+                        <a
+                            href="#"
+                            onclick="window.switchAuthForm('login'); return false;"
+                            id="back-to-login"
+                        >
+                            ← Back to Login
+                        </a>
+                    </p>
+
+                    <div
+                        class="success-message"
+                        id="forgot-password-success"
+                        style="display: none;"
+                    >
+                        <i class="fas fa-check-circle"></i>
+                        <span>Check your email for a reset link!</span>
+                    </div>
+
+                </form>
+
+
+
+                <!-- ================= SIGN UP ================= -->
+                <form
+                    id="signup-form-element"
+                    class="auth-form"
+                >
+
+                    <div class="auth-heading">
+
+                        <span class="auth-eyebrow">
+                            GET STARTED
+                        </span>
+
+                        <h2>
+                            Let's get you started ✨
+                        </h2>
+
+                        <p>
+                            Create your account and start building
+                            better money habits.
+                        </p>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="signup-name">
+                            Full Name
+                        </label>
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-user"></i>
+
+                            <input
+                                type="text"
+                                id="signup-name"
+                                placeholder="Enter your full name"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="signup-email">
+                            Email Address
+                        </label>
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                id="signup-email"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="signup-password">
+                            Password
+                        </label>
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="signup-password"
+                                placeholder="Create a password (min 6 characters)"
+                                autocomplete="new-password"
+                                minlength="6"
+                                required
+                            >
+                            <button type="button" class="password-toggle" aria-label="Show password" title="Show password">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="signup-gender">
+                            Gender
+                        </label>
+
+                        <div class="auth-input-wrapper select-wrapper">
+
+                            <i class="fas fa-user-circle"></i>
+
+                            <select
+                                id="signup-gender"
+                                required
+                            >
+
+                                <option value="">
+                                    Select your gender
+                                </option>
+
+                                <option value="male">
+                                    Male
+                                </option>
+
+                                <option value="female">
+                                    Female
+                                </option>
+
+                                <option value="other">
+                                    Other
+                                </option>
+
+                                <option value="prefer-not-to-say">
+                                    Prefer not to say
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="signup-error"
+                        class="error-message"
+                    ></div>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary btn-large auth-submit"
+                    >
+                        <span class="auth-spinner" aria-hidden="true" hidden>
+                            <i class="fas fa-spinner"></i>
+                        </span>
+                        <span class="auth-button-text">Create Account</span>
+                        <i class="fas fa-arrow-right auth-arrow"></i>
+                    </button>
+
+
+                    <p class="auth-switch">
+
+                        Already have an account?
+
+                        <a
+                            href="#"
+                            onclick="window.switchAuthForm('login'); return false;"
+                        >
+                            Sign in
+                        </a>
+
+                    </p>
+
+                </form>
+
+
+
+                <!-- ================= RESET PASSWORD ================= -->
+                <form
+                    id="reset-password-form-element"
+                    class="auth-form"
+                    style="display: none;"
+                >
+
+                    <div class="auth-heading">
+
+                        <span class="auth-eyebrow">
+                            NEW PASSWORD
+                        </span>
+
+                        <h2>
+                            Create a new password 🔒
+                        </h2>
+
+                        <p>
+                            Your new password must be different from your previous password.
+                        </p>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="reset-new-password">
+                            New Password
+                        </label>
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="reset-new-password"
+                                placeholder="Enter new password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-target="reset-new-password"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                        <small class="form-hint">At least 6 characters</small>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="reset-confirm-password">
+                            Confirm Password
+                        </label>
+
+                        <div class="auth-input-wrapper">
+
+                            <i class="fas fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="reset-confirm-password"
+                                placeholder="Confirm new password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-target="reset-confirm-password"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+
+                        </div>
+
+                        <small
+                            class="error-message"
+                            id="reset-password-error"
+                        ></small>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary btn-large auth-submit"
+                    >
+                        <span class="auth-spinner" aria-hidden="true" hidden>
+                            <i class="fas fa-spinner"></i>
+                        </span>
+                        <span class="auth-button-text">Update Password</span>
+                        <i class="fas fa-arrow-right auth-arrow"></i>
+                    </button>
+
+                    <p class="auth-switch">
+                        <a
+                            href="#"
+                            onclick="window.switchAuthForm('login'); return false;"
+                            id="back-to-login-from-reset"
+                        >
+                            ← Back to Login
+                        </a>
+                    </p>
+
+                    <div
+                        class="success-message"
+                        id="reset-password-success"
+                        style="display: none;"
+                    >
+                        <i class="fas fa-check-circle"></i>
+                        <span>Password updated successfully!</span>
+                    </div>
+
+                </form>
+
+
+
+                <div id="verification-state" class="auth-form" style="display: none;">
+                    <div class="auth-heading">
+                        <span class="auth-eyebrow">VERIFY YOUR EMAIL</span>
+                        <h2>Account created successfully!</h2>
+                        <p id="verification-message">
+                            Please check your email to verify your account before signing in.
+                        </p>
+                    </div>
+
+                    <div class="info-box">
+                        We sent a verification link to: <strong id="verification-email">your email</strong>
+                    </div>
+
+                    <div id="verification-error" class="error-message"></div>
+
+                    <button id="resend-verification-btn" type="button" class="btn btn-primary btn-large auth-submit">
+                        <span class="auth-button-text">Resend verification email</span>
+                    </button>
+
+                    <p class="auth-switch">
+                        <button id="back-to-login-btn" type="button" class="link-button">
+                            Back to Login
+                        </button>
+                    </p>
                 </div>
-                <div class="form-group">
-                    <label for="signup-email">Email Address</label>
-                    <input type="email" id="signup-email" placeholder="Enter your email" required>
+
+                <div id="onboarding-screen" class="auth-form onboarding-form" style="display: none;">
+                    <div class="auth-heading onboarding-header">
+                        <span class="auth-eyebrow">WELCOME</span>
+                        <h2>Let’s set up your money plan</h2>
+                        <p>We’ll tailor your budget to your allowance, spending habits, and savings goals.</p>
+                    </div>
+
+                    <form id="onboarding-form">
+                        <div class="onboarding-progress-wrap">
+                            <div class="onboarding-progress-meta">
+                                <span id="onboarding-step-indicator">Step 1 of 8</span>
+                                <span id="onboarding-step-label">Welcome</span>
+                            </div>
+                            <div class="onboarding-progress-bar">
+                                <span id="onboarding-progress-fill"></span>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step active" data-step="0">
+                            <div class="onboarding-hero-card">
+                                <div class="onboarding-hero-icon"><i class="fas fa-wallet"></i></div>
+                                <h3>Welcome to Student Budget 🎓</h3>
+                                <p>Let’s get your money organised in about a minute so you can spend smarter and save with confidence.</p>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step" data-step="1">
+                            <div class="form-group">
+                                <label for="onboarding-income-source">How do you usually receive money?</label>
+                                <div class="auth-input-wrapper select-wrapper">
+                                    <i class="fas fa-wallet"></i>
+                                    <select id="onboarding-income-source">
+                                        <option value="">Select an option</option>
+                                        <option value="monthly allowance">Monthly allowance</option>
+                                        <option value="weekly allowance">Weekly allowance</option>
+                                        <option value="scholarship">Scholarship</option>
+                                        <option value="salary or part-time job">Salary / part-time job</option>
+                                        <option value="family support">Family</option>
+                                        <option value="side hustle">Side hustle</option>
+                                        <option value="other">Other</option>
+                                        <option value="whenever i receive money">Whenever I receive money</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step" data-step="2">
+                            <div class="form-group">
+                                <label for="onboarding-income-amount">How much money do you normally receive?</label>
+                                <div class="auth-input-wrapper">
+                                    <i class="fas fa-coins"></i>
+                                    <input id="onboarding-income-amount" type="number" min="0" step="0.01" placeholder="0.00" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step" data-step="3">
+                            <div class="form-group">
+                                <label for="onboarding-income-frequency">How often do you receive it?</label>
+                                <div class="auth-input-wrapper select-wrapper">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <select id="onboarding-income-frequency">
+                                        <option value="monthly">Monthly</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="biweekly">Every 2 weeks</option>
+                                        <option value="semester">Semester</option>
+                                        <option value="irregular">Irregular / whenever I receive money</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step" data-step="4">
+                            <div class="form-group">
+                                <label for="onboarding-next-income-date">When do you expect your next income?</label>
+                                <div class="auth-input-wrapper">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <input id="onboarding-next-income-date" type="date" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step" data-step="5">
+                            <div class="form-group">
+                                <label>What do you normally spend money on?</label>
+                                <div class="onboarding-checkbox-grid">
+                                    <label class="onboarding-choice"><input type="checkbox" value="food" /> Food</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="transport" /> Transportation</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="data" /> Data / Airtime</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="school" /> School</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="accommodation" /> Accommodation</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="entertainment" /> Entertainment</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="shopping" /> Shopping</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="utilities" /> Utilities</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="clothing" /> Clothing</label>
+                                    <label class="onboarding-choice"><input type="checkbox" value="other" /> Other</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step" data-step="6">
+                            <div class="form-group">
+                                <label>What are you planning to save for?</label>
+                                <div class="onboarding-choice-stack">
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="not-now" checked /> Not right now</label>
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="laptop" /> Laptop</label>
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="new phone" /> New phone</label>
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="school fees" /> School fees</label>
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="accommodation" /> Accommodation</label>
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="trip" /> Trip</label>
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="emergency fund" /> Emergency fund</label>
+                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="something else" /> Something else</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="onboarding-goal-details" style="display:none;">
+                                <label for="onboarding-goal-amount">Target amount</label>
+                                <div class="auth-input-wrapper">
+                                    <i class="fas fa-bullseye"></i>
+                                    <input id="onboarding-goal-amount" type="number" min="0" step="0.01" placeholder="0.00" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-step" data-step="7">
+                            <div class="form-group">
+                                <label for="onboarding-safe-daily-spending">Based on your plan, what is a safe amount to spend today?</label>
+                                <div class="auth-input-wrapper">
+                                    <i class="fas fa-shield-heart"></i>
+                                    <input id="onboarding-safe-daily-spending" type="number" min="0" step="0.01" placeholder="0.00" />
+                                </div>
+                            </div>
+
+                            <div class="onboarding-review">
+                                <h3>Your plan</h3>
+                                <ul id="onboarding-summary-list"></ul>
+                            </div>
+                        </div>
+
+                        <div id="onboarding-error" class="error-message"></div>
+
+                        <div class="onboarding-actions">
+                            <button type="button" id="onboarding-back-btn" class="btn btn-secondary auth-submit onboarding-back-btn" style="display: none;">
+                                <span class="auth-button-text">Back</span>
+                            </button>
+                            <button type="button" id="onboarding-next-btn" class="btn btn-primary auth-submit onboarding-next-btn">
+                                <span class="auth-button-text">Continue</span>
+                                <i class="fas fa-arrow-right auth-arrow"></i>
+                            </button>
+                            <button type="submit" id="onboarding-submit-btn" class="btn btn-primary auth-submit onboarding-submit-btn" style="display: none;">
+                                <span class="auth-button-text">Finish Setup</span>
+                                <i class="fas fa-arrow-right auth-arrow"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="signup-password">Password</label>
-                    <input type="password" id="signup-password" placeholder="Create a password (min 6 characters)" required minlength="6">
-                </div>
-                <div class="form-group">
-                    <label for="signup-gender">Gender</label>
-                    <select id="signup-gender" required>
-                        <option value="">Select your gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                        <option value="prefer-not-to-say">Prefer not to say</option>
-                    </select>
-                </div>
-                <div id="signup-error" class="error-message"></div>
-                <button type="submit" class="btn btn-primary btn-large">Create Account</button>
-                <p class="auth-switch">Already have an account? <a href="#" onclick="window.switchAuthForm('login'); return false;">Sign in</a></p>
-            </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div id="welcome-overlay" class="welcome-overlay" aria-hidden="true">
+        <div class="welcome-inner">
+            <div class="welcome-logo-wrap">
+                <div class="welcome-logo">SB</div>
+            </div>
+            <div class="welcome-ring ring-one"></div>
+            <div class="welcome-ring ring-two"></div>
+            <div class="welcome-icons">
+                <span><i class="fas fa-wallet"></i></span>
+                <span><i class="fas fa-chart-line"></i></span>
+                <span><i class="fas fa-piggy-bank"></i></span>
+                <span><i class="fas fa-graduation-cap"></i></span>
+            </div>
+            <h2>Spend Smart.<br><span>Save More.</span></h2>
+            <p>Make every naira count and reach your goals.</p>
+            <div class="welcome-celebration">You’re all set!</div>
         </div>
     </div>
 
     <!-- App Container -->
-    <div class="app-container">
+    <div id="app-container" class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="ChatGPT Image Aug 29, 2026, 06_43_48 PM.png" alt="Student Budget">
+                    <span class="sidebar-brand">Student Budget</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="sidebar-nav-list">
+                    <li class="sidebar-nav-item">
+                        <a href="#dashboard" class="sidebar-nav-link active" data-page="dashboard">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#budget" class="sidebar-nav-link" data-page="budget">
+                            <i class="fas fa-wallet"></i>
+                            <span>Budget</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#expense" class="sidebar-nav-link" data-page="expense">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Add Expense</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#history" class="sidebar-nav-link" data-page="history">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>Transactions</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#savings" class="sidebar-nav-link" data-page="savings">
+                            <i class="fas fa-bullseye"></i>
+                            <span>Savings Goals</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#settings" class="sidebar-nav-link" data-page="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar" id="sidebar-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name" id="sidebar-user-name">Student</span>
+                        <span class="sidebar-user-label">My Account</span>
+                    </div>
+                    <button class="sidebar-logout" id="sidebar-logout" title="Sign Out">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-area">
         <!-- Header -->
-        <header class="app-header" style="display: flex !important; justify-content: space-between !important; align-items: center !important; flex-wrap: wrap; gap: 1.5rem;">
-            <div class="header-actions" style="order: 1; display: flex; align-items: center;">
-                <button id="settings-btn" class="header-btn" title="got to make it 👊🏿">
-                    <p>🪙</p>
+        <header class="app-header">
+            <div class="header-actions">
+                <button id="mobile-menu-toggle" class="header-btn mobile-menu-btn" title="Open menu">
+                    <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <div class="header-content" style="order: 2; flex: 1; text-align: center; padding: 0 1rem;">
-                <h1 style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 0; margin-bottom: 0.25rem;"><i class="fas fa-graduation-cap"></i> Student Budget Tracker</h1>
-                <p class="subtitle" style="margin: 0; margin-bottom: 0.25rem;">Manage your finances like a pro student</p>
-                <p id="greeting-message" class="greeting-message" style="margin-top: 0.25rem;"></p>
+            <div class="header-content">
+                <h1><i class="fas fa-graduation-cap"></i> Student Budget Tracker</h1>
+                <p class="subtitle">Manage your finances like a pro student</p>
+                <p id="greeting-message" class="greeting-message"></p>
             </div>
-            <div class="current-month-display" style="order: 3; white-space: nowrap;">
+            <div class="current-month-display">
                 <span id="current-month">April 2023</span>
             </div>
         </header>
@@ -154,80 +912,131 @@
         <main class="main-content">
             <!-- Dashboard Page -->
             <section id="dashboard-page" class="page active">
-                <div class="page-header">
-                    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
-                    <p class="page-subtitle">Your financial overview</p>
+                <!-- Greeting Section -->
+                <div class="dash-greeting">
+                    <div class="greeting-left">
+                        <h2 class="greeting-title" id="v2-greeting-text">Good morning 👋</h2>
+                        <p class="greeting-subtitle">Your money, in control.</p>
+                    </div>
+                    <div class="greeting-right">
+                        <span class="month-pill" id="v2-month-pill">August 2026</span>
+                    </div>
                 </div>
-                
-                <!-- Summary Cards -->
+
+                <!-- Main Balance Card -->
+                <div class="balance-hero-card">
+                    <div class="balance-hero-content">
+                        <div class="balance-hero-left">
+                            <div class="balance-label">
+                                <span>Available balance</span>
+                                <button class="balance-toggle" id="balance-toggle" title="Show/Hide balance">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="balance-amount" id="v2-available-balance">₦0</div>
+                            <div class="balance-meta">
+                                <span class="balance-meta-icon">🟢</span>
+                                <span>Next allowance: <strong id="v2-next-income-label">Aug 20</strong> • <span id="v2-days-left">9</span> days</span>
+                            </div>
+                        </div>
+                        <div class="balance-hero-right">
+                            <div class="balance-decoration">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Safe to Spend Card -->
+                <div class="safe-spend-card">
+                    <div class="safe-spend-icon">🎯</div>
+                    <div class="safe-spend-content">
+                        <span class="safe-spend-label">Safe to spend today</span>
+                        <span class="safe-spend-amount" id="v2-safe-spend">₦0</span>
+                    </div>
+                    <div class="safe-spend-status">
+                        <span class="safe-spend-check">✓</span>
+                        <span>You're on track</span>
+                    </div>
+                </div>
+
+                <!-- Financial Summary Cards -->
                 <div class="summary-cards">
-                    <div class="card total-budget">
-                        <div class="card-icon">
+                    <div class="summary-card budget-card">
+                        <div class="summary-card-icon budget-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <div class="card-content">
-                            <h3>Total Budget</h3>
-                            <p class="amount" id="total-budget">₦0.00</p>
+                        <div class="summary-card-content">
+                            <span class="summary-card-label">BUDGET</span>
+                            <span class="summary-card-amount" id="total-budget">₦0.00</span>
                         </div>
                     </div>
-                    
-                    <div class="card remaining-balance">
-                        <div class="card-icon">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Remaining</h3>
-                            <p class="amount" id="remaining-balance">₦0.00</p>
-                        </div>
-                    </div>
-                    
-                    <div class="card total-spent">
-                        <div class="card-icon">
+
+                    <div class="summary-card spent-card">
+                        <div class="summary-card-icon spent-icon">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <div class="card-content">
-                            <h3>Total Spent</h3>
-                            <p class="amount" id="total-spent">₦0.00</p>
+                        <div class="summary-card-content">
+                            <span class="summary-card-label">SPENT</span>
+                            <span class="summary-card-amount" id="total-spent">₦0.00</span>
                         </div>
                     </div>
-                    
-                    <div class="card total-savings">
-                        <div class="card-icon">
+
+                    <div class="summary-card saved-card">
+                        <div class="summary-card-icon saved-icon">
                             <i class="fas fa-piggy-bank"></i>
                         </div>
-                        <div class="card-content">
-                            <h3>Savings</h3>
-                            <p class="amount" id="total-savings">₦0.00</p>
+                        <div class="summary-card-content">
+                            <span class="summary-card-label">SAVED</span>
+                            <span class="summary-card-amount" id="total-savings">₦0.00</span>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Recent Expenses -->
-                <div class="dashboard-section">
-                    <div class="section-header">
-                        <h3><i class="fas fa-receipt"></i> Recent Expenses</h3>
-                        <a href="#history" class="view-all-link">View All</a>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <!-- Spending Breakdown -->
+                    <div class="dashboard-card spending-breakdown">
+                        <div class="dashboard-card-header">
+                            <h3><i class="fas fa-chart-pie"></i> Where your money went</h3>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="category-breakdown" id="category-breakdown">
+                                <div class="empty-state">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <p>No spending data to display</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="recent-expenses" id="recent-expenses">
-                        <!-- Recent expenses will be loaded here -->
-                        <div class="empty-state">
-                            <i class="fas fa-receipt"></i>
-                            <p>No expenses recorded yet</p>
-                            <a href="#expense" class="btn btn-primary">Add Your First Expense</a>
+
+                    <!-- Savings Goal -->
+                    <div class="dashboard-card savings-goal-card">
+                        <div class="dashboard-card-header">
+                            <h3><i class="fas fa-bullseye"></i> Savings goal</h3>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="v2-goal-card" id="v2-goal-card">
+                                <p class="v2-empty-goal">What are you saving for?</p>
+                            </div>
+                            <a href="#savings" class="view-goals-link">View goals →</a>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Category Breakdown -->
-                <div class="dashboard-section">
-                    <div class="section-header">
-                        <h3><i class="fas fa-chart-pie"></i> Spending by Category</h3>
+
+                <!-- Recent Transactions -->
+                <div class="dashboard-card recent-transactions">
+                    <div class="dashboard-card-header">
+                        <h3><i class="fas fa-receipt"></i> Recent transactions</h3>
+                        <a href="#history" class="view-all-link">View all →</a>
                     </div>
-                    <div class="category-breakdown" id="category-breakdown">
-                        <!-- Category breakdown will be loaded here -->
-                        <div class="empty-state">
-                            <i class="fas fa-chart-pie"></i>
-                            <p>No spending data to display</p>
+                    <div class="dashboard-card-body">
+                        <div class="recent-expenses" id="recent-expenses">
+                            <div class="empty-state">
+                                <i class="fas fa-receipt"></i>
+                                <p>No expenses recorded yet</p>
+                                <a href="#expense" class="btn btn-primary">Add Your First Expense</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -652,6 +1461,39 @@
                         </div>
                     </div>
                     
+                    <div class="card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-plus-circle"></i> Add Savings</h3>
+                            <form id="add-savings-form">
+                                <div class="form-group">
+                                    <label for="savings-goal-select">Savings goal</label>
+                                    <select id="savings-goal-select">
+                                        <option value="">No goal set yet</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="savings-amount">Amount to save</label>
+                                    <div class="input-with-icon">
+                                        <span class="currency-symbol">₦</span>
+                                        <input type="number" id="savings-amount" min="0.01" step="0.01" placeholder="0.00" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="savings-note">Note (optional)</label>
+                                    <textarea id="savings-note" rows="2" placeholder="e.g., From side hustle"></textarea>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary btn-large">
+                                        <i class="fas fa-piggy-bank"></i> Save ₦ amount
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                     <div class="savings-calculator card">
                         <div class="card-content">
                             <h3><i class="fas fa-calculator"></i> Savings Calculator</h3>
@@ -740,6 +1582,16 @@
                                         <option value="prefer-not-to-say">Prefer not to say</option>
                                     </select>
                                 </div>
+                                <div class="form-group">
+                                    <label for="settings-notifications">Notifications</label>
+                                    <label class="toggle-row" for="settings-notifications">
+                                        <span class="toggle-text">Enable student notifications</span>
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="settings-notifications" checked>
+                                            <span class="toggle-slider"></span>
+                                        </span>
+                                    </label>
+                                </div>
                                 <div class="form-actions">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save"></i> Save Changes
@@ -809,16 +1661,22 @@
         </div>
     </div>
 
+    </div><!-- end main-area -->
+    
+    <!-- Sidebar Overlay (for mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
     <!-- Scripts - Load in correct order -->
     <!-- Main app functionality -->
     <script src="app.js?v=3.0"></script>
-    <script src="dashboard.js?v=3.0"></script>
+    <script src="dashboard.js?v=4.0"></script>
     <script src="budget.js?v=3.0"></script>
     <script src="notifications.js?v=3.0"></script>
     <script src="expense.js?v=3.0"></script>
     <script src="history.js?v=3.0"></script>
     <script src="history-monthly.js?v=3.0"></script>
     <script src="savings.js?v=3.0"></script>
+    <script type="module" src="supabase-client.js?v=1.0"></script>
     <!-- Authentication and Firebase (after app scripts) -->
     <script type="module" src="main.js?v=3.0"></script>
     

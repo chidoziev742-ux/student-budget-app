@@ -1,0 +1,40 @@
+<!-- Cache Clearing Script - Add to HTML Head -->
+<script>
+// Aggressive cache clearing for header fix
+// Run immediately when page loads
+
+// Clear old service worker cache
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      registration.unregister();
+      console.log('[Cache Clear] Service Worker unregistered');
+    });
+  });
+
+  // Also clear the cache storage
+  if ('caches' in window) {
+    caches.keys().then(cacheNames => {
+      cacheNames.forEach(cacheName => {
+        caches.delete(cacheName);
+        console.log('[Cache Clear] Deleted cache:', cacheName);
+      });
+    });
+  }
+}
+
+// Clear old localStorage caches
+const oldCacheKeys = [
+  'student-budget-v1',
+  'student-budget-v2',
+];
+
+oldCacheKeys.forEach(key => {
+  if (localStorage.getItem(key)) {
+    localStorage.removeItem(key);
+    console.log('[Cache Clear] Cleared localStorage:', key);
+  }
+});
+
+console.log('[Cache Clear] All old caches cleared, new service worker will register');
+</script>

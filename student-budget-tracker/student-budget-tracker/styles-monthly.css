@@ -1,0 +1,707 @@
+/* ===== Monthly Budget System Styles ===== */
+
+/* Month Selector */
+#month-selector-card {
+    margin-bottom: var(--space-lg);
+}
+
+#month-selector {
+    width: 100%;
+    padding: var(--space-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#month-selector:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+#month-selector-card .form-hint {
+    margin-top: var(--space-sm);
+}
+
+/* Income Form and Display */
+.income-summary {
+    padding: var(--space-md) 0;
+}
+
+.income-total {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.income-total .label {
+    color: var(--gray-color);
+    font-weight: 500;
+}
+
+.income-total .value {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--success-color);
+}
+
+.income-list {
+    margin-top: var(--space-lg);
+}
+
+.income-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--space-md);
+    align-items: center;
+    padding: var(--space-md);
+    background-color: var(--light-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-md);
+    border-left: 4px solid var(--success-color);
+}
+
+.income-item:last-child {
+    margin-bottom: 0;
+}
+
+.income-details {
+    flex: 1;
+}
+
+.income-source {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: var(--space-xs);
+}
+
+.income-date {
+    font-size: 0.85rem;
+    color: var(--gray-color);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.income-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--success-color);
+    text-align: right;
+}
+
+.income-item .btn-icon {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+}
+
+.income-item .btn-icon:hover {
+    background-color: #ffe6e6;
+}
+
+#income-form {
+    margin-top: var(--space-lg);
+}
+
+#income-form .form-group {
+    margin-bottom: var(--space-md);
+}
+
+/* Expense Summary (Monthly) */
+.expense-summary {
+    margin-top: var(--space-lg);
+}
+
+.total-expenses-display {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md);
+    background-color: var(--light-color);
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--danger-color);
+}
+
+.total-expenses-display .label {
+    color: var(--gray-color);
+    font-weight: 500;
+}
+
+.total-expenses-display .value {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--danger-color);
+}
+
+#expenses-list-monthly {
+    margin-top: var(--space-md);
+}
+
+.expense-item-minimal {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-md);
+    align-items: center;
+    padding: var(--space-md);
+    background-color: var(--light-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.expense-item-minimal:last-child {
+    margin-bottom: 0;
+}
+
+.expense-item-minimal .expense-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.expense-details-minimal {
+    flex: 1;
+}
+
+.expense-details-minimal .expense-category {
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-xs);
+}
+
+.expense-details-minimal .expense-date {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+}
+
+.expense-item-minimal .expense-amount {
+    font-weight: 700;
+    color: var(--danger-color);
+}
+
+/* Monthly History Grid */
+.monthly-history-section {
+    margin-top: var(--space-xl);
+}
+
+.months-history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+}
+
+@media (max-width: 768px) {
+    .months-history-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: var(--space-md);
+    }
+}
+
+/* Month Cards */
+.month-card {
+    background-color: white;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.month-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+}
+
+.month-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.month-card-header h3 {
+    font-size: 1.1rem;
+    color: var(--dark-color);
+    margin: 0;
+}
+
+.month-badge {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.month-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    flex-grow: 1;
+}
+
+.month-stat {
+    text-align: center;
+    padding: var(--space-md);
+    background-color: var(--light-color);
+    border-radius: var(--radius-sm);
+}
+
+.month-stat .stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.month-stat .stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+.month-stat .stat-value.income {
+    color: var(--success-color);
+}
+
+.month-stat .stat-value.expense {
+    color: var(--danger-color);
+}
+
+.month-stat .stat-value.positive {
+    color: var(--success-color);
+}
+
+.month-stat .stat-value.negative {
+    color: var(--danger-color);
+}
+
+.month-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.count-badge {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.count-badge i {
+    font-size: 0.75rem;
+    color: var(--primary-color);
+}
+
+.btn-view-details {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-view-details:hover {
+    background-color: var(--secondary-color);
+    transform: translateX(2px);
+}
+
+.btn-view-details i {
+    margin-left: var(--space-xs);
+    font-size: 0.7rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+/* Month Details Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-md);
+    overflow-y: auto;
+}
+
+.modal[style*="display: flex"] {
+    display: flex !important;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1;
+}
+
+.modal-header h2 {
+    font-size: 1.3rem;
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.close-modal {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-color);
+    background: none;
+    border: none;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+}
+
+.modal-body {
+    padding: var(--space-lg);
+}
+
+.month-details-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    padding: var(--space-lg);
+    background-color: var(--light-color);
+    border-radius: var(--radius-md);
+}
+
+@media (max-width: 600px) {
+    .month-details-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+.detail-stat {
+    text-align: center;
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+.detail-value.income {
+    color: var(--success-color);
+}
+
+.detail-value.expense {
+    color: var(--danger-color);
+}
+
+.detail-value.positive {
+    color: var(--success-color);
+}
+
+.detail-value.negative {
+    color: var(--danger-color);
+}
+
+/* Month Income/Expense Lists */
+.month-income-list,
+.month-expenses-list {
+    margin-bottom: var(--space-lg);
+}
+
+.month-income-list h3,
+.month-expenses-list h3 {
+    font-size: 1.1rem;
+    color: var(--dark-color);
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.detail-entry {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-md);
+    align-items: center;
+    padding: var(--space-md);
+    background-color: var(--light-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-md);
+}
+
+.detail-entry:last-child {
+    margin-bottom: 0;
+}
+
+.income-entry {
+    border-left: 4px solid var(--success-color);
+}
+
+.expense-entry {
+    border-left: 4px solid var(--danger-color);
+}
+
+.entry-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.entry-details {
+    flex: 1;
+}
+
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-xs);
+}
+
+.entry-title {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.entry-date {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+}
+
+.entry-category {
+    font-size: 0.85rem;
+    color: var(--gray-color);
+    text-transform: capitalize;
+}
+
+.entry-amount {
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: right;
+}
+
+.entry-amount.income {
+    color: var(--success-color);
+}
+
+.entry-amount.expense {
+    color: var(--danger-color);
+}
+
+.empty-note {
+    text-align: center;
+    color: var(--gray-color);
+    padding: var(--space-lg);
+    font-style: italic;
+}
+
+/* Loading State */
+.loading {
+    text-align: center;
+    padding: var(--space-xl);
+    color: var(--gray-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    font-size: 1rem;
+}
+
+.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Budget Form Enhancements */
+.budget-form-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 768px) {
+    .budget-form-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Success Color for Income */
+.btn-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #2bcb88;
+    transform: translateY(-1px);
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.btn-icon:hover {
+    background-color: var(--light-color);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+}
+
+.section-header h3 {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.section-header .btn {
+    flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .month-card-body {
+        grid-template-columns: 1fr;
+    }
+    
+    .month-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .btn-view-details {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .months-history-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .month-details-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-header {
+        padding: var(--space-md);
+    }
+    
+    .modal-body {
+        padding: var(--space-md);
+    }
+}

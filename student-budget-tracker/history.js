@@ -6,22 +6,97 @@
 /**
  * Update the history page
  */
-function updateHistoryPage() {
-    // Set up filter event listeners
-    const monthFilter = document.getElementById('filter-month');
-    const categoryFilter = document.getElementById('filter-category');
+// function updateHistoryPage() {
+//     // Set up filter event listeners
+//     const monthFilter = document.getElementById('filter-month');
+//     const categoryFilter = document.getElementById('filter-category');
     
-    if (monthFilter) {
-        monthFilter.addEventListener('change', updateHistoryList);
+//     if (monthFilter) {
+//         monthFilter.addEventListener('change', updateHistoryList);
+//         populateMonthFilter();
+//     }
+    
+//     if (categoryFilter) {
+//         categoryFilter.addEventListener('change', updateHistoryList);
+//     }
+    
+//     // Update the history list
+//     updateHistoryList();
+// }
+async function updateHistoryPage() {
+    const user = window.firebaseAuth?.getCurrentUser?.();
+
+    if (!user) {
+        console.warn('No authenticated user for history');
+        return;
+    }
+
+    try {
+        // Get all months belonging to this user
+        const monthsResult = await window.monthlyBudget?.getUserMonthsList?.(user.uid);
+
+        if (!monthsResult?.success) {
+            console.error('Failed to load user months');
+            return;
+        }
+
+        const allExpenses = [];
+
+        // Load expenses from every month
+        for (const month of monthsResult.months || []) {
+            const monthResult = await window.monthlyBudget?.getMonthData?.(
+                user.uid,
+                month
+            );
+
+            if (monthResult?.success && Array.isArray(monthResult.expenses)) {
+                allExpenses.push(...monthResult.expenses);
+            }
+        }
+
+        // Keep appState synchronized with the monthly source of truth.
+        appState.expenses = allExpenses;
+
+        console.log(
+            `[History] Loaded ${allExpenses.length} expenses from monthly system`
+        );
+
+        // Set up filter event listeners
+        const monthFilter = document.getElementById('filter-month');
+        const categoryFilter = document.getElementById('filter-category');
+
+        if (monthFilter) {
+            // Prevent duplicate event listeners
+            monthFilter.onchange = updateHistoryList;
+        }
+
+        if (categoryFilter) {
+            categoryFilter.onchange = updateHistoryList;
+        }
+
+        // Populate filters using freshly loaded data
         populateMonthFilter();
+
+        // Display expenses
+        updateHistoryList();
+
+    } catch (error) {
+        console.error('Error loading history:', error);
+
+        const container = document.getElementById('expenses-list');
+
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Unable to load your expense history.</p>
+                    <button class="btn btn-primary" onclick="updateHistoryPage()">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
     }
-    
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', updateHistoryList);
-    }
-    
-    // Update the history list
-    updateHistoryList();
 }
 
 /**
@@ -108,7 +183,8 @@ function updateHistoryList() {
     
     let html = '';
     filteredExpenses.forEach(expense => {
-        const category = CONFIG.CATEGORIES[expense.category] || CONFIG.CATEGORIES.other;
+        const categoryKey = window.getExpenseCategoryKey?.(expense.category) || 'other';
+        const category = window.getExpenseCategoryMeta?.(categoryKey) || CONFIG.CATEGORIES[expense.category] || CONFIG.CATEGORIES.other;
         const date = new Date(expense.date);
         const formattedDate = date.toLocaleDateString('en-US', {
             weekday: 'short',
@@ -119,7 +195,7 @@ function updateHistoryList() {
         
         html += `
             <div class="expense-item">
-                <div class="expense-category-icon ${expense.category}" style="background-color: ${category.color}">
+                <div class="expense-category-icon ${categoryKey}" style="background-color: ${category.color}">
                     <i class="${category.icon}"></i>
                 </div>
                 <div class="expense-details">

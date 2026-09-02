@@ -24,6 +24,42 @@ window.CONFIG = {
     }
 };
 
+window.getExpenseCategoryKey = function(category) {
+    const rawValue = String(category ?? '').trim();
+    if (!rawValue) return 'other';
+
+    const normalized = rawValue.toLowerCase().replace(/[^a-z]+/g, '');
+    if (!normalized) return 'other';
+
+    const directKeys = Object.keys(window.CONFIG.CATEGORIES);
+    if (directKeys.includes(rawValue.toLowerCase()) || directKeys.includes(normalized)) {
+        return rawValue.toLowerCase() || normalized;
+    }
+
+    const categoryGroups = {
+        food: ['food', 'foodanddining', 'meal', 'meals', 'breakfast', 'lunch', 'dinner', 'snack', 'coffee', 'tea', 'restaurant', 'kebab', 'pizza', 'groceries'],
+        transport: ['transport', 'transportation', 'bus', 'busfare', 'taxi', 'ride', 'uber', 'commute', 'fare', 'fuel', 'train'],
+        entertainment: ['entertainment', 'movie', 'movies', 'movieticket', 'cinema', 'streaming', 'concert', 'game', 'gaming', 'party'],
+        education: ['education', 'school', 'schoolfees', 'textbook', 'books', 'book', 'tuition', 'lecture', 'library', 'class', 'exam'],
+        shopping: ['shopping', 'cloth', 'clothes', 'market', 'purchase', 'bag', 'toiletries', 'gift'],
+        housing: ['housing', 'housingutilities', 'rent', 'apartment', 'utilities', 'electricity', 'water', 'internet', 'wifi', 'bill', 'bills'],
+        health: ['health', 'healthwellness', 'medical', 'clinic', 'pharmacy', 'medication', 'wellness', 'hospital', 'doctor']
+    };
+
+    for (const [key, aliases] of Object.entries(categoryGroups)) {
+        if (aliases.some(alias => normalized === alias || normalized.includes(alias))) {
+            return key;
+        }
+    }
+
+    return 'other';
+};
+
+window.getExpenseCategoryMeta = function(category) {
+    const key = window.getExpenseCategoryKey(category);
+    return window.CONFIG.CATEGORIES[key] || window.CONFIG.CATEGORIES.other;
+};
+
 // App State
 window.appState = {
     currentPage: 'dashboard',
@@ -100,14 +136,14 @@ function updateCurrentDate() {
 
 /**
  * Load app data from localStorage
- * NOTE: Financial data (budget, expenses, savingsGoal) is NO LONGER loaded from localStorage.
- * Firebase Firestore is the sole source of truth for all financial data.
+ * NOTE: Financial data (budget, expenses, savingsGoal) is no longer loaded from localStorage.
+ * Supabase is the source of truth for all financial data.
  * Only UI preferences are stored in localStorage.
  */
 function loadAppData() {
     try {
         // Initialize appState with default values
-        // Financial data will be loaded from Firebase only (monthly-budget-system.js)
+        // Financial data is loaded from Supabase via the monthly-budget-system.js query layer
         appState = {
             currentPage: 'dashboard',
             budget: null,
@@ -115,7 +151,7 @@ function loadAppData() {
             savingsGoal: 0
         };
         
-        console.log('App data initialized (financial data will load from Firebase Firestore)');
+        console.log('App data initialized (financial data will load from Supabase)');
     } catch (error) {
         console.error('Error initializing app data:', error);
         // Initialize with default values
@@ -130,10 +166,9 @@ function loadAppData() {
 
 /**
  * Save app data to localStorage
- * NOTE: Financial data (budget, expenses, savingsGoal) is NO LONGER saved to localStorage.
- * All financial data is saved to Firebase Firestore only via monthly-budget-system.js.
+ * NOTE: Financial data (budget, expenses, savingsGoal) is no longer saved to localStorage.
+ * All financial data is managed through Supabase via monthly-budget-system.js.
  * localStorage is reserved for UI preferences only.
- * DEPRECATED: The old Firestore paths (saveBudgetToFirestore, etc.) are no longer used.
  */
 function saveAppData() {
     try {
@@ -160,6 +195,23 @@ function setupEventListeners() {
             const page = this.getAttribute('data-page');
             showPage(page);
         });
+    });
+
+    const settingsBtn = document.getElementById('settings-btn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.showPage) {
+                showPage('settings');
+            }
+        });
+    }
+
+    window.addEventListener('hashchange', function() {
+        const route = window.normalizePageRoute ? window.normalizePageRoute(window.location.hash) : (window.location.hash || '#dashboard').replace('#', '');
+        if (route && document.getElementById(`${route}-page`)) {
+            showPage(route);
+        }
     });
     
     // Modal buttons
@@ -215,10 +267,34 @@ function setupEventListeners() {
 }
 
 /**
+ * Normalize route names and aliases to the actual page IDs used by the app.
+ */
+window.normalizePageRoute = function(routeName) {
+    const raw = String(routeName || '').replace(/^#/, '').trim().toLowerCase();
+    const aliases = {
+        '': 'dashboard',
+        home: 'dashboard',
+        dashboard: 'dashboard',
+        budget: 'budget',
+        add: 'expense',
+        expense: 'expense',
+        goals: 'savings',
+        savings: 'savings',
+        history: 'history',
+        settings: 'settings'
+    };
+
+    const normalized = aliases[raw] || raw;
+    return document.getElementById(`${normalized}-page`) ? normalized : 'dashboard';
+};
+
+/**
  * Show a specific page and hide others
  * @param {string} pageId - The ID of the page to show
  */
 async function showPage(pageId) {
+    const normalizedPageId = window.normalizePageRoute ? window.normalizePageRoute(pageId) : pageId;
+
     // Ensure DOM elements are cached
     if (!domElements.navLinks) {
         cacheDomElements();
@@ -227,7 +303,9 @@ async function showPage(pageId) {
     // Update navigation
     if (domElements.navLinks) {
         domElements.navLinks.forEach(link => {
-            if (link.getAttribute('data-page') === pageId) {
+            const linkPage = link.getAttribute('data-page');
+            const activePage = linkPage === normalizedPageId || (normalizedPageId === 'expense' && linkPage === 'add') || (normalizedPageId === 'savings' && linkPage === 'goals');
+            if (activePage) {
                 link.classList.add('active');
             } else {
                 link.classList.remove('active');
@@ -235,10 +313,22 @@ async function showPage(pageId) {
         });
     }
     
+    // Sync sidebar navigation active state
+    const sidebarLinks = document.querySelectorAll('.sidebar-nav-link');
+    sidebarLinks.forEach(link => {
+        const linkPage = link.getAttribute('data-page');
+        const activePage = linkPage === normalizedPageId || (normalizedPageId === 'expense' && linkPage === 'add') || (normalizedPageId === 'savings' && linkPage === 'goals');
+        if (activePage) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+    
     // Update pages
     if (domElements.pages) {
         domElements.pages.forEach(page => {
-            if (page.id === `${pageId}-page`) {
+            if (page.id === `${normalizedPageId}-page`) {
                 page.classList.add('active');
             } else {
                 page.classList.remove('active');
@@ -247,13 +337,23 @@ async function showPage(pageId) {
     }
     
     // Update app state
-    appState.currentPage = pageId;
+    appState.currentPage = normalizedPageId;
     
-    // Update the URL hash for bookmarking
-    window.location.hash = pageId;
+    // Update the URL hash for bookmarking while preserving the user-facing route aliases
+    const routeAlias = {
+        dashboard: 'dashboard',
+        budget: 'budget',
+        expense: 'add',
+        savings: 'goals',
+        history: 'history',
+        settings: 'settings'
+    }[normalizedPageId] || normalizedPageId;
+    if (window.location.hash.replace('#', '').toLowerCase() !== routeAlias) {
+        window.location.hash = routeAlias;
+    }
     
     // Trigger page-specific updates
-    await updatePageContent(pageId);
+    await updatePageContent(normalizedPageId);
 }
 
 /**
@@ -276,10 +376,13 @@ async function updatePageContent(pageId) {
                 expenseDateInput.value = today;
                 expenseDateInput.max = today; // Don't allow future dates
             }
-            break;
+        //   case 'history':  break;
+        
+        //     updateHistoryPage();
+        //     break;
         case 'history':
-            updateHistoryPage();
-            break;
+    await updateHistoryPage();
+    break;
         case 'savings':
             await updateSavingsPage();
             break;
@@ -295,7 +398,30 @@ async function updatePageContent(pageId) {
  * @returns {string} Formatted currency string
  */
 function formatCurrency(amount) {
-    return `${CONFIG.DEFAULT_CURRENCY}${parseFloat(amount).toFixed(2)}`;
+    const numericAmount = Number(amount);
+    const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+    return `${CONFIG.DEFAULT_CURRENCY}${safeAmount.toLocaleString('en-NG', {
+        minimumFractionDigits: Number.isInteger(safeAmount) ? 0 : 2,
+        maximumFractionDigits: 2
+    })}`;
+}
+
+function initPasswordVisibilityToggles() {
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+        const input = toggle.closest('.auth-input-wrapper')?.querySelector('input[type="password"], input[type="text"]');
+        const icon = toggle.querySelector('i');
+        if (!input || !icon || toggle.dataset.initialized === 'true') return;
+
+        toggle.dataset.initialized = 'true';
+        toggle.addEventListener('click', () => {
+            const isVisible = input.type === 'text';
+            input.type = isVisible ? 'password' : 'text';
+            icon.classList.toggle('fa-eye', isVisible);
+            icon.classList.toggle('fa-eye-slash', !isVisible);
+            toggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+            toggle.setAttribute('title', isVisible ? 'Show password' : 'Hide password');
+        });
+    });
 }
 
 /**
@@ -697,6 +823,8 @@ toastStyles.textContent = `
 `;
 document.head.appendChild(toastStyles);
 
+initPasswordVisibilityToggles();
+
 // Initialize the app when the DOM is fully loaded
 // BUT ONLY IF we're showing the app (i.e., user is authenticated)
 // For now, don't auto-initialize - let main.js handle it
@@ -717,7 +845,9 @@ window.appUtils = {
 
 // Make initApp globally available
 window.initApp = initApp;
+window.initNotificationSystem = initNotificationSystem;
 window.showPage = showPage;
+window.initPasswordVisibilityToggles = initPasswordVisibilityToggles;
 /**
  * Notification System Module
  * Handles all in-app notifications
@@ -746,110 +876,378 @@ class NotificationSystem {
         this.triggeredNotifications = new Set();
         this.init();
     }
-    
-    /**
-     * Initialize the notification system
-     */
-    init() {
-        // Load previously shown notifications from localStorage
-        this.loadNotificationHistory();
-        
-        // Set last checked date to today
+
+    async init() {
         this.lastCheckedDate = new Date();
-        
-        // Start periodic check (every 30 seconds)
+        await this.refreshFromSupabase();
+        this.updateNotificationIndicator();
         setInterval(() => this.checkNotifications(), 30000);
-        
-        // Check notifications on app initialization
-        setTimeout(() => this.checkNotifications(), 2000);
-        
-        console.log('Notification system initialized');
+        setTimeout(() => this.checkNotifications(), 1500);
+        console.log('Student notification system initialized');
     }
-    
-    /**
-     * Show a notification
-     * @param {string} title - Notification title
-     * @param {string} message - Notification message
-     * @param {string} type - Notification type (info, warning, error, success)
-     * @param {string} trigger - What triggered this notification
-     * @param {boolean} persistent - Whether to show this every time until action taken
-     */
-    showNotification(title, message, type = NOTIFICATION_TYPES.INFO, trigger = null, persistent = false) {
-        // Check if we should suppress this notification
-        if (trigger && this.shouldSuppressNotification(trigger)) {
+
+    async getCurrentUserId() {
+        const user = window.firebaseAuth?.getCurrentUser?.() || window.currentUser || null;
+        if (user?.uid) return user.uid;
+
+        if (window.supabase?.auth?.getUser) {
+            try {
+                const { data: { user: supaUser } } = await window.supabase.auth.getUser();
+                if (supaUser?.id) return supaUser.id;
+            } catch (error) {
+                console.warn('[Notifications] Unable to resolve authenticated user ID:', error.message);
+            }
+        }
+
+        return null;
+    }
+
+    async isNotificationsEnabled() {
+        try {
+            if (window.supabase?.auth?.getUser) {
+                const { data, error } = await window.supabase.auth.getUser();
+                if (!error && data?.user?.user_metadata && typeof data.user.user_metadata.notifications_enabled !== 'undefined') {
+                    return Boolean(data.user.user_metadata.notifications_enabled);
+                }
+            }
+        } catch (error) {
+            console.warn('[Notifications] Could not read notification preference:', error.message);
+        }
+
+        const storedValue = localStorage.getItem(`${CONFIG.APP_NAME}_notifications_enabled`);
+        if (storedValue !== null) {
+            return storedValue === 'true';
+        }
+
+        return true;
+    }
+
+    async setNotificationsEnabled(enabled) {
+        const userId = await this.getCurrentUserId();
+        localStorage.setItem(`${CONFIG.APP_NAME}_notifications_enabled`, String(Boolean(enabled)));
+
+        if (!userId || !window.supabase) {
+            return { success: true };
+        }
+
+        try {
+            const { error } = await window.supabase.auth.updateUser({
+                data: { notifications_enabled: Boolean(enabled) }
+            });
+
+            if (error) {
+                console.warn('[Notifications] auth preference update warning:', error.message);
+            }
+        } catch (error) {
+            console.warn('[Notifications] preference save failed:', error.message);
+        }
+
+        return { success: true };
+    }
+
+    isNotificationDismissed(item) {
+        const metadata = item?.metadata || {};
+        const dismissedAt = item?.dismissed_at || metadata.dismissed_at || metadata.dismissedAt || null;
+        return Boolean(dismissedAt || metadata.dismissed === true || item?.dismissed === true);
+    }
+
+    async refreshFromSupabase() {
+        const userId = await this.getCurrentUserId();
+        if (!userId || !window.supabase) {
+            this.notifications = [];
             return;
         }
-        
-        // Create notification object
-        const notification = {
-            id: Date.now().toString(),
-            title,
-            message,
-            type,
-            trigger,
-            timestamp: new Date().toISOString(),
-            read: false
-        };
-        
-        // Add to notifications array
-        this.notifications.push(notification);
-        
-        // Mark as triggered if it has a trigger
-        if (trigger) {
-            this.triggeredNotifications.add(trigger);
+
+        try {
+            const { data, error } = await window.supabase
+                .from('notifications')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.warn('[Notifications] Load failed:', error.message);
+                this.notifications = [];
+                return;
+            }
+
+            this.notifications = (data || [])
+                .filter(item => !this.isNotificationDismissed(item))
+                .map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    message: item.message,
+                    type: item.type || 'info',
+                    trigger: item.metadata?.trigger || null,
+                    metadata: item.metadata || {},
+                    read: Boolean(item.is_read),
+                    dismissed: this.isNotificationDismissed(item),
+                    timestamp: item.created_at,
+                    created_at: item.created_at
+                }));
+        } catch (error) {
+            console.warn('[Notifications] refresh failed:', error.message);
+            this.notifications = [];
         }
-        
-        // Show toast notification
-        this.showToastNotification(notification);
-        
-        // Save notification to history if persistent
-        if (persistent) {
-            this.saveNotificationToHistory(notification);
-        }
-        
-        // Update notification bell icon if exists
+
         this.updateNotificationIndicator();
-        
-        // Log for debugging
-        console.log(`Notification shown: ${title}`, notification);
+        this.loadNotificationsIntoPanel();
     }
-    
-    /**
-     * Show toast notification
-     * @param {object} notification - Notification object
-     */
+
+    async notificationExistsByEventKey(eventKey) {
+        if (!eventKey) return false;
+
+        const userId = await this.getCurrentUserId();
+        if (!userId || !window.supabase) return false;
+
+        try {
+            const { data, error } = await window.supabase
+                .from('notifications')
+                .select('id')
+                .eq('user_id', userId)
+                .filter('metadata->>event_key', 'eq', eventKey)
+                .limit(1);
+
+            return !error && Array.isArray(data) && data.length > 0;
+        } catch (error) {
+            console.warn('[Notifications] duplicate check failed:', error.message);
+            return false;
+        }
+    }
+
+    buildEventKey(prefix, suffix) {
+        const month = window.monthlyBudget?.getCurrentMonth?.() || new Date().toISOString().slice(0, 7);
+        return `${prefix}_${suffix}_${month}`.replace(/\s+/g, '_').toLowerCase();
+    }
+
+    async createNotification({ title, message, type = NOTIFICATION_TYPES.INFO, trigger = null, metadata = {} }) {
+        const userId = await this.getCurrentUserId();
+        if (!userId || !window.supabase) return null;
+
+        const enabled = await this.isNotificationsEnabled();
+        if (!enabled) return null;
+
+        const eventKey = metadata.event_key || trigger || null;
+        if (eventKey && await this.notificationExistsByEventKey(eventKey)) {
+            return null;
+        }
+
+        try {
+            const payload = {
+                user_id: userId,
+                type,
+                title,
+                message,
+                is_read: false,
+                created_at: new Date().toISOString(),
+                metadata: {
+                    ...metadata,
+                    trigger: trigger || metadata.trigger || null,
+                    event_key: eventKey
+                }
+            };
+
+            const { data, error } = await window.supabase
+                .from('notifications')
+                .insert(payload)
+                .select()
+                .single();
+
+            if (error) {
+                console.warn('[Notifications] insert failed:', error.message);
+                return null;
+            }
+
+            this.notifications = [
+                {
+                    id: data.id,
+                    title: data.title,
+                    message: data.message,
+                    type: data.type || 'info',
+                    trigger: data.metadata?.trigger || null,
+                    metadata: data.metadata || {},
+                    read: Boolean(data.is_read),
+                    timestamp: data.created_at,
+                    created_at: data.created_at
+                },
+                ...this.notifications
+            ];
+
+            this.updateNotificationIndicator();
+            this.loadNotificationsIntoPanel();
+
+            this.showToastNotification({
+                id: data.id,
+                title,
+                message,
+                type
+            });
+
+            if (window.Notification && Notification.permission === 'granted') {
+                new Notification(title, { body: message, tag: data.id });
+            }
+
+            return data;
+        } catch (error) {
+            console.warn('[Notifications] create failed:', error.message);
+            return null;
+        }
+    }
+
+    async markNotificationRead(notificationId) {
+        const userId = await this.getCurrentUserId();
+        if (!userId || !window.supabase) return false;
+
+        try {
+            const { error } = await window.supabase
+                .from('notifications')
+                .update({ is_read: true })
+                .eq('id', notificationId)
+                .eq('user_id', userId);
+
+            if (error) {
+                console.warn('[Notifications] mark read failed:', error.message);
+                return false;
+            }
+
+            const notification = this.notifications.find(item => item.id === notificationId);
+            if (notification) {
+                notification.read = true;
+            }
+
+            this.updateNotificationIndicator();
+            this.loadNotificationsIntoPanel();
+            return true;
+        } catch (error) {
+            console.warn('[Notifications] mark read exception:', error.message);
+            return false;
+        }
+    }
+
+    async dismissNotification(notificationId) {
+        const userId = await this.getCurrentUserId();
+        if (!userId || !window.supabase) return false;
+
+        try {
+            const target = this.notifications.find(item => item.id === notificationId);
+            const existingMetadata = target?.metadata || {};
+            const now = new Date().toISOString();
+            const nextMetadata = {
+                ...existingMetadata,
+                dismissed: true,
+                dismissed_at: now,
+                dismissedAt: now
+            };
+
+            const updatePayload = {
+                is_read: true,
+                metadata: nextMetadata
+            };
+
+            try {
+                const { error } = await window.supabase
+                    .from('notifications')
+                    .update(updatePayload)
+                    .eq('id', notificationId)
+                    .eq('user_id', userId);
+
+                if (!error) {
+                    this.notifications = this.notifications.filter(item => item.id !== notificationId);
+                    this.updateNotificationIndicator();
+                    this.loadNotificationsIntoPanel();
+                    return true;
+                }
+
+                if (!String(error.message || '').toLowerCase().includes('column') && !String(error.message || '').toLowerCase().includes('does not exist')) {
+                    throw error;
+                }
+            } catch (columnError) {
+                // Fallback for schemas without a dedicated dismissed_at column.
+                const fallbackPayload = {
+                    is_read: true,
+                    metadata: nextMetadata
+                };
+                const { error: metaError } = await window.supabase
+                    .from('notifications')
+                    .update(fallbackPayload)
+                    .eq('id', notificationId)
+                    .eq('user_id', userId);
+
+                if (metaError) {
+                    throw metaError;
+                }
+            }
+
+            this.notifications = this.notifications.filter(item => item.id !== notificationId);
+            this.updateNotificationIndicator();
+            this.loadNotificationsIntoPanel();
+            return true;
+        } catch (error) {
+            console.warn('[Notifications] dismiss exception:', error.message);
+            return false;
+        }
+    }
+
+    async markAllNotificationsRead() {
+        const userId = await this.getCurrentUserId();
+        if (!userId || !window.supabase) return false;
+
+        try {
+            const notificationIds = this.notifications
+                .filter(item => !item.read)
+                .map(item => item.id);
+
+            if (!notificationIds.length) {
+                this.updateNotificationIndicator();
+                this.loadNotificationsIntoPanel();
+                return true;
+            }
+
+            const { error } = await window.supabase
+                .from('notifications')
+                .update({ is_read: true })
+                .in('id', notificationIds)
+                .eq('user_id', userId);
+
+            if (error) {
+                console.warn('[Notifications] mark all read failed:', error.message);
+                return false;
+            }
+
+            this.notifications = this.notifications.map(item => ({
+                ...item,
+                read: notificationIds.includes(item.id) ? true : item.read
+            }));
+            this.updateNotificationIndicator();
+            this.loadNotificationsIntoPanel();
+            return true;
+        } catch (error) {
+            console.warn('[Notifications] mark all read exception:', error.message);
+            return false;
+        }
+    }
+
+    showNotification(title, message, type = NOTIFICATION_TYPES.INFO, trigger = null, metadata = {}) {
+        return this.createNotification({ title, message, type, trigger, metadata: { ...metadata, trigger } });
+    }
+
     showToastNotification(notification) {
-        // Use existing showToast function if available
         if (typeof showToast === 'function') {
             showToast(`${notification.title}: ${notification.message}`, notification.type);
-        } else {
-            // Fallback to built-in toast
-            this.createToast(notification);
+            return;
         }
-    }
-    
-    /**
-     * Create a toast notification element
-     * @param {object} notification - Notification object
-     */
-    createToast(notification) {
-        // Create toast element
+
         const toast = document.createElement('div');
         toast.className = `notification-toast notification-${notification.type}`;
         toast.dataset.notificationId = notification.id;
-        
-        // Set icon based on type
-        let icon = 'info-circle';
-        switch(notification.type) {
-            case NOTIFICATION_TYPES.SUCCESS: icon = 'check-circle'; break;
-            case NOTIFICATION_TYPES.ERROR: icon = 'exclamation-circle'; break;
-            case NOTIFICATION_TYPES.WARNING: icon = 'exclamation-triangle'; break;
-        }
-        
+        const iconMap = {
+            success: 'check-circle',
+            error: 'exclamation-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle'
+        };
         toast.innerHTML = `
-            <div class="notification-icon">
-                <i class="fas fa-${icon}"></i>
-            </div>
+            <div class="notification-icon"><i class="fas fa-${iconMap[notification.type] || 'info-circle'}"></i></div>
             <div class="notification-content">
                 <div class="notification-title">${notification.title}</div>
                 <div class="notification-message">${notification.message}</div>
@@ -859,432 +1257,343 @@ class NotificationSystem {
                 <i class="fas fa-times"></i>
             </button>
         `;
-        
-        // Add to notification container or body
+
         const container = document.getElementById('notification-container') || document.body;
         container.appendChild(toast);
-        
-        // Show with animation
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 10);
-        
-        // Auto-dismiss after 5 seconds (except warnings and errors)
-        if (notification.type !== NOTIFICATION_TYPES.WARNING && 
-            notification.type !== NOTIFICATION_TYPES.ERROR) {
+        setTimeout(() => toast.classList.add('show'), 10);
+        if (notification.type !== NOTIFICATION_TYPES.WARNING && notification.type !== NOTIFICATION_TYPES.ERROR) {
             setTimeout(() => {
-                this.dismissNotification(notification.id);
+                if (toast.parentNode) toast.remove();
             }, 5000);
         }
     }
-    
-    /**
-     * Dismiss a notification
-     * @param {string} notificationId - ID of notification to dismiss
-     */
-    dismissNotification(notificationId) {
-        // Remove from DOM
-        const toast = document.querySelector(`[data-notification-id="${notificationId}"]`);
-        if (toast) {
-            toast.classList.remove('show');
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 300);
-        }
-        
-        // Mark as read in array
-        const notification = this.notifications.find(n => n.id === notificationId);
-        if (notification) {
-            notification.read = true;
-        }
-        
-        // Update notification indicator
-        this.updateNotificationIndicator();
-    }
-    
-    /**
-     * Check all notification conditions
-     */
-    checkNotifications() {
-        // Check for no budget set
-        this.checkNoBudgetSet();
-        
-        // Check budget usage percentages
-        this.checkBudgetUsage();
-        
-        // Check for new month without budget
-        this.checkNewMonthNoBudget();
-        
-        // Update last checked date
-        this.lastCheckedDate = new Date();
-    }
-    
-    /**
-     * Check if user hasn't set a budget
-     */
-    checkNoBudgetSet() {
-        if (!appState.budget || !appState.budget.amount) {
-            this.showNotification(
-                'Budget Not Set',
-                'You haven\'t set a monthly budget yet. Go to the Budget page to set one.',
-                NOTIFICATION_TYPES.WARNING,
-                NOTIFICATION_TRIGGERS.NO_BUDGET_SET,
-                true // Persistent until budget is set
-            );
-        }
-    }
-    
-    /**
-     * Check budget usage for 70% and 90% thresholds
-     */
-    checkBudgetUsage() {
-        if (!appState.budget || !appState.budget.amount) return;
-        
-        const totalSpent = calculateTotalExpenses();
-        const budgetAmount = appState.budget.amount;
-        const usagePercentage = (totalSpent / budgetAmount) * 100;
-        
-        // Check for 70% threshold
-        if (usagePercentage >= 70 && usagePercentage < 90) {
-            if (!this.triggeredNotifications.has(NOTIFICATION_TRIGGERS.BUDGET_70_PERCENT)) {
-                this.showNotification(
-                    'Budget Alert - 70% Spent',
-                    `You've spent ${usagePercentage.toFixed(1)}% of your monthly budget. Consider slowing down your spending.`,
-                    NOTIFICATION_TYPES.WARNING,
-                    NOTIFICATION_TRIGGERS.BUDGET_70_PERCENT
-                );
+
+    async checkNotifications() {
+        const enabled = await this.isNotificationsEnabled();
+        if (!enabled) return;
+
+        const userId = await this.getCurrentUserId();
+        if (!userId) return;
+
+        const month = window.monthlyBudget?.getCurrentMonth?.();
+        if (!month) return;
+
+        let monthData = null;
+        if (window.monthlyBudget?.getMonthData) {
+            try {
+                monthData = await window.monthlyBudget.getMonthData(userId, month);
+            } catch (error) {
+                console.warn('[Notifications] month data read failed:', error.message);
+                return;
             }
         }
-        
-        // Check for 90% threshold
-        if (usagePercentage >= 90 && usagePercentage < 100) {
-            if (!this.triggeredNotifications.has(NOTIFICATION_TRIGGERS.BUDGET_90_PERCENT)) {
-                this.showNotification(
-                    'Budget Alert - 90% Spent',
-                    `You've spent ${usagePercentage.toFixed(1)}% of your monthly budget. You're approaching your limit!`,
-                    NOTIFICATION_TYPES.WARNING,
-                    NOTIFICATION_TRIGGERS.BUDGET_90_PERCENT
-                );
+
+        const budget = Number(monthData?.budget || appState?.budget?.amount || 0);
+        const expenses = monthData?.expenses || appState?.expenses || [];
+        const spent = (expenses || []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+        const budgetByCategory = monthData?.budgetByCategory || {};
+        Object.entries(budgetByCategory).forEach(([category, categoryBudget]) => {
+            const categoryTotal = Number(categoryBudget || 0);
+            if (!categoryTotal || categoryTotal <= 0) return;
+
+            const categorySpent = (monthData?.spentByCategory?.[category] || 0) + ((expenses || []).filter(exp => String(exp.category || '').toLowerCase() === String(category).toLowerCase()).reduce((sum, item) => sum + (Number(item.amount) || 0), 0));
+            const usage = (categorySpent / categoryTotal) * 100;
+
+            if (usage >= 80 && usage < 90) {
+                const key = this.buildEventKey(`budget_${category}`, '80');
+                this.createNotification({
+                    title: 'Budget update',
+                    message: `You've used 80% of your ${category} budget.`,
+                    type: NOTIFICATION_TYPES.WARNING,
+                    trigger: 'BUDGET_80_PERCENT',
+                    metadata: { event_key: key, category, threshold: 80 }
+                });
+            }
+
+            if (usage >= 90 && usage < 100) {
+                const key = this.buildEventKey(`budget_${category}`, '90');
+                this.createNotification({
+                    title: 'Budget warning',
+                    message: `You've used 90% of your ${category} budget.`,
+                    type: NOTIFICATION_TYPES.WARNING,
+                    trigger: 'BUDGET_90_PERCENT',
+                    metadata: { event_key: key, category, threshold: 90 }
+                });
+            }
+
+            if (usage >= 100) {
+                const key = this.buildEventKey(`budget_${category}`, 'exceeded');
+                this.createNotification({
+                    title: 'Budget exceeded',
+                    message: `You've exceeded your ${category} budget.`,
+                    type: NOTIFICATION_TYPES.ERROR,
+                    trigger: 'BUDGET_EXCEEDED',
+                    metadata: { event_key: key, category, threshold: 100 }
+                });
+            }
+        });
+
+        if (budget > 0) {
+            const usage = (spent / budget) * 100;
+            if (usage >= 80 && usage < 90) {
+                const key = this.buildEventKey('monthly_budget', '80');
+                this.createNotification({
+                    title: 'Monthly budget update',
+                    message: `You've used 80% of your monthly budget.`,
+                    type: NOTIFICATION_TYPES.WARNING,
+                    trigger: 'MONTHLY_BUDGET_80',
+                    metadata: { event_key: key, threshold: 80 }
+                });
+            }
+            if (usage >= 90 && usage < 100) {
+                const key = this.buildEventKey('monthly_budget', '90');
+                this.createNotification({
+                    title: 'Monthly budget warning',
+                    message: `You've used 90% of your monthly budget.`,
+                    type: NOTIFICATION_TYPES.WARNING,
+                    trigger: 'MONTHLY_BUDGET_90',
+                    metadata: { event_key: key, threshold: 90 }
+                });
+            }
+            if (usage >= 100) {
+                const key = this.buildEventKey('monthly_budget', 'exceeded');
+                this.createNotification({
+                    title: 'Monthly budget exceeded',
+                    message: `You've exceeded your monthly budget.`,
+                    type: NOTIFICATION_TYPES.ERROR,
+                    trigger: 'MONTHLY_BUDGET_EXCEEDED',
+                    metadata: { event_key: key, threshold: 100 }
+                });
             }
         }
-        
-        // Check for exceeded budget
-        if (usagePercentage >= 100) {
-            if (!this.triggeredNotifications.has(NOTIFICATION_TRIGGERS.BUDGET_EXCEEDED)) {
-                this.showNotification(
-                    'Budget Exceeded!',
-                    `You've exceeded your monthly budget by ${formatCurrency(totalSpent - budgetAmount)}. Consider reviewing your expenses.`,
-                    NOTIFICATION_TYPES.ERROR,
-                    NOTIFICATION_TRIGGERS.BUDGET_EXCEEDED
-                )
-            }
+
+        const remaining = budget - spent;
+        if (remaining > 0 && remaining <= 500) {
+            const key = this.buildEventKey('low_balance', 'warning');
+            this.createNotification({
+                title: 'Low balance',
+                message: 'Your available balance is getting low. Consider reducing spending.',
+                type: NOTIFICATION_TYPES.WARNING,
+                trigger: 'LOW_BALANCE',
+                metadata: { event_key: key, remaining }
+            });
         }
-    }
-    
-    /**
-     * Check if new month started without a budget
-     */
-    checkNewMonthNoBudget() {
-        // If no budget is set, we don't need this check
-        if (!appState.budget || !appState.budget.setDate) return;
-        
-        const budgetSetDate = new Date(appState.budget.setDate);
-        const currentDate = new Date();
-        
-        // Check if we're in a new month compared to when budget was set
-        if (budgetSetDate.getMonth() !== currentDate.getMonth() || 
-            budgetSetDate.getFullYear() !== currentDate.getFullYear()) {
-            
-            // Check if we've already shown this notification this month
-            const lastShownKey = `new_month_notification_${currentDate.getFullYear()}_${currentDate.getMonth()}`;
-            const lastShown = localStorage.getItem(lastShownKey);
-            
-            if (!lastShown) {
-                this.showNotification(
-                    'New Month Started',
-                    `It's a new month! Review and update your budget for ${currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}.`,
-                    NOTIFICATION_TYPES.INFO,
-                    NOTIFICATION_TRIGGERS.NEW_MONTH_NO_BUDGET
-                );
-                
-                // Mark as shown for this month
-                localStorage.setItem(lastShownKey, 'true');
+
+        if (monthData?.nextIncomeDate || window.currentUser?.profile?.next_income_date) {
+            const nextIncomeDate = monthData?.nextIncomeDate || window.currentUser?.profile?.next_income_date;
+            const days = Math.max(0, Math.ceil((new Date(nextIncomeDate) - new Date()) / (1000 * 60 * 60 * 24)));
+            if (days >= 0 && days <= 3) {
+                const key = this.buildEventKey('income_reminder', 'next_income');
+                this.createNotification({
+                    title: 'Income reminder',
+                    message: days === 0 ? 'Your next allowance is due today.' : `Your next allowance is coming in ${days} day${days === 1 ? '' : 's'}.`,
+                    type: NOTIFICATION_TYPES.INFO,
+                    trigger: 'INCOME_REMINDER',
+                    metadata: { event_key: key, days, date: nextIncomeDate }
+                });
             }
         }
     }
-    
-    /**
-     * Check if we should suppress a notification
-     * @param {string} trigger - Notification trigger
-     * @returns {boolean} True if notification should be suppressed
-     */
-    shouldSuppressNotification(trigger) {
-        // Check if this trigger has already been shown
-        return this.triggeredNotifications.has(trigger);
+
+    async syncSavingsNotifications() {
+        const userId = await this.getCurrentUserId();
+        if (!userId || !window.monthlyBudget?.getMonthData) return;
+
+        const month = window.monthlyBudget.getCurrentMonth();
+        const monthData = await window.monthlyBudget.getMonthData(userId, month);
+        const goalAmount = Number(monthData?.savingsGoal || 0);
+        const savedAmount = Number(monthData?.savedAmount || monthData?.savings || 0);
+        const goalName = window.currentUser?.profile?.goal_name || 'your goal';
+
+        if (goalAmount > 0 && savedAmount >= 0) {
+            const milestone25 = goalAmount * 0.25;
+            const milestone50 = goalAmount * 0.5;
+            const milestone75 = goalAmount * 0.75;
+            const milestone100 = goalAmount;
+
+            if (savedAmount >= milestone25 && savedAmount < milestone50) {
+                this.createNotification({
+                    title: 'Savings milestone',
+                    message: `You've reached 25% of your ${goalName} savings goal!`,
+                    type: NOTIFICATION_TYPES.SUCCESS,
+                    trigger: 'SAVINGS_25',
+                    metadata: { event_key: this.buildEventKey(`savings_${goalName || 'goal'}`, '25'), goal_name: goalName }
+                });
+            }
+
+            if (savedAmount >= milestone50 && savedAmount < milestone75) {
+                this.createNotification({
+                    title: 'Savings milestone',
+                    message: `You've reached 50% of your ${goalName} savings goal!`,
+                    type: NOTIFICATION_TYPES.SUCCESS,
+                    trigger: 'SAVINGS_50',
+                    metadata: { event_key: this.buildEventKey(`savings_${goalName || 'goal'}`, '50'), goal_name: goalName }
+                });
+            }
+
+            if (savedAmount >= milestone75 && savedAmount < milestone100) {
+                this.createNotification({
+                    title: 'Savings milestone',
+                    message: `You've reached 75% of your ${goalName} savings goal!`,
+                    type: NOTIFICATION_TYPES.SUCCESS,
+                    trigger: 'SAVINGS_75',
+                    metadata: { event_key: this.buildEventKey(`savings_${goalName || 'goal'}`, '75'), goal_name: goalName }
+                });
+            }
+
+            if (savedAmount >= milestone100) {
+                this.createNotification({
+                    title: 'Savings goal completed',
+                    message: `You reached your ${goalName} savings goal! 🎉`,
+                    type: NOTIFICATION_TYPES.SUCCESS,
+                    trigger: 'SAVINGS_GOAL_COMPLETED',
+                    metadata: { event_key: this.buildEventKey(`savings_${goalName || 'goal'}`, '100'), goal_name: goalName }
+                });
+            }
+        }
     }
-    
-    /**
-     * Clear triggered notifications (call when budget is updated)
-     */
-    clearTriggeredNotifications() {
-        this.triggeredNotifications.clear();
-        console.log('Cleared triggered notifications');
+
+    async recordSavingsContribution({ amount, goalName = 'your goal', goalId = null }) {
+        const userId = await this.getCurrentUserId();
+        if (!userId || !amount || amount <= 0) return null;
+
+        const month = window.monthlyBudget?.getCurrentMonth?.() || new Date().toISOString().slice(0, 7);
+        const eventKey = this.buildEventKey(`savings_contribution_${goalId || goalName}`, `amount_${amount}`);
+
+        const monthData = await window.monthlyBudget?.getMonthData?.(userId, month);
+        const savedAmount = Number(monthData?.savedAmount || monthData?.savings || 0);
+        const goalAmount = Number(monthData?.savingsGoal || 0);
+        const message = goalAmount > 0
+            ? `You're now at ${formatCurrency(savedAmount)} of your ${formatCurrency(goalAmount)} ${goalName} goal.`
+            : `You added ${formatCurrency(amount)} to savings.`;
+
+        return this.createNotification({
+            title: 'Savings update',
+            message,
+            type: NOTIFICATION_TYPES.SUCCESS,
+            trigger: 'SAVINGS_CONTRIBUTION',
+            metadata: { event_key: eventKey, goal_name: goalName, goal_id: goalId || null, amount }
+        });
     }
-    
-    /**
-     * Update notification indicator (bell icon)
-     */
-    updateNotificationIndicator() {
-        // Count unread notifications
-        const unreadCount = this.notifications.filter(n => !n.read).length;
-        
-        // Update or create notification bell in header
+
+    async updateNotificationIndicator() {
+        const unreadCount = this.notifications.filter(item => !item.read).length;
         let bellIcon = document.getElementById('notification-bell');
-        
-        if (!bellIcon && unreadCount > 0) {
-            // Create notification bell
-            bellIcon = document.createElement('div');
+
+        if (!bellIcon) {
+            bellIcon = document.createElement('button');
             bellIcon.id = 'notification-bell';
+            bellIcon.type = 'button';
             bellIcon.className = 'notification-bell';
-            bellIcon.innerHTML = `
-                <i class="fas fa-bell"></i>
-                ${unreadCount > 0 ? `<span class="notification-badge">${unreadCount}</span>` : ''}
-            `;
-            
-            // Add to header
+            bellIcon.setAttribute('aria-label', 'Open notifications');
+            bellIcon.setAttribute('title', 'Open notifications');
+
+            const headerActions = document.querySelector('.header-actions');
             const header = document.querySelector('.app-header');
-            if (header) {
+            if (headerActions) {
+                headerActions.appendChild(bellIcon);
+            } else if (header) {
                 header.appendChild(bellIcon);
             }
-            
-            // Add click event to show notification panel
             bellIcon.addEventListener('click', () => this.showNotificationPanel());
-        } else if (bellIcon) {
-            // Update badge count
-            const badge = bellIcon.querySelector('.notification-badge');
-            if (unreadCount > 0) {
-                if (!badge) {
-                    bellIcon.innerHTML += `<span class="notification-badge">${unreadCount}</span>`;
-                } else {
-                    badge.textContent = unreadCount;
-                }
-                bellIcon.classList.add('has-notifications');
-            } else {
-                if (badge) badge.remove();
-                bellIcon.classList.remove('has-notifications');
-            }
+        }
+
+        bellIcon.innerHTML = `
+            <span class="bell-icon"><i class="fas fa-bell"></i></span>
+            <span class="bell-label">Alerts</span>
+            ${unreadCount > 0 ? `<span class="notification-badge">${unreadCount}</span>` : ''}
+        `;
+
+        if (unreadCount > 0) {
+            bellIcon.classList.add('has-notifications');
+        } else {
+            bellIcon.classList.remove('has-notifications');
         }
     }
-    
-    /**
-     * Show notification panel with all notifications
-     */
+
     showNotificationPanel() {
-        // Create or show notification panel
         let panel = document.getElementById('notification-panel');
-        
+
         if (!panel) {
             panel = document.createElement('div');
             panel.id = 'notification-panel';
             panel.className = 'notification-panel';
-            
-            // Add close button
             panel.innerHTML = `
                 <div class="notification-panel-header">
                     <h3><i class="fas fa-bell"></i> Notifications</h3>
-                    <button class="notification-panel-close">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button class="notification-panel-close"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="notification-panel-content" id="notification-panel-content">
-                    <!-- Notifications will be loaded here -->
-                </div>
+                <div class="notification-panel-content" id="notification-panel-content"></div>
                 <div class="notification-panel-footer">
-                    <button id="clear-all-notifications" class="btn btn-secondary">
-                        <i class="fas fa-trash"></i> Clear All
-                    </button>
+                    <button id="clear-all-notifications" class="btn btn-secondary"><i class="fas fa-check-double"></i> Mark all as read</button>
                 </div>
             `;
-            
             document.body.appendChild(panel);
-            
-            // Add event listeners
-            panel.querySelector('.notification-panel-close').addEventListener('click', () => {
-                panel.classList.remove('show');
-            });
-            
-            document.getElementById('clear-all-notifications').addEventListener('click', () => {
-                this.clearAllNotifications();
-            });
-            
-            // Close panel when clicking outside
+
+            panel.querySelector('.notification-panel-close').addEventListener('click', () => panel.classList.remove('show'));
+            document.getElementById('clear-all-notifications').addEventListener('click', () => this.markAllNotificationsRead());
+
             document.addEventListener('click', (e) => {
                 if (!panel.contains(e.target) && !e.target.closest('#notification-bell')) {
                     panel.classList.remove('show');
                 }
             });
         }
-        
-        // Load notifications into panel
+
         this.loadNotificationsIntoPanel();
-        
-        // Show panel
         panel.classList.add('show');
     }
-    
-    /**
-     * Load notifications into the panel
-     */
+
     loadNotificationsIntoPanel() {
         const content = document.getElementById('notification-panel-content');
         if (!content) return;
-        
-        if (this.notifications.length === 0) {
+
+        if (!this.notifications.length) {
             content.innerHTML = `
                 <div class="empty-notifications">
                     <i class="fas fa-bell-slash"></i>
                     <p>No notifications yet</p>
-                    <small>You'll get notified about budget alerts and important updates</small>
+                    <small>You'll see your student budget alerts here.</small>
                 </div>
             `;
             return;
         }
-        
-        // Sort notifications by timestamp (newest first)
-        const sortedNotifications = [...this.notifications].sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
-        );
-        
-        let html = '<div class="notification-list">';
-        
-        sortedNotifications.forEach(notification => {
-            const timeAgo = this.getTimeAgo(notification.timestamp);
-            const typeIcon = this.getTypeIcon(notification.type);
-            
-            html += `
-                <div class="notification-item ${notification.read ? 'read' : 'unread'}" data-id="${notification.id}">
-                    <div class="notification-item-icon">
-                        <i class="fas fa-${typeIcon} notification-${notification.type}"></i>
-                    </div>
-                    <div class="notification-item-content">
-                        <div class="notification-item-title">${notification.title}</div>
-                        <div class="notification-item-message">${notification.message}</div>
-                        <div class="notification-item-time">${timeAgo}</div>
-                    </div>
-                    <button class="notification-item-dismiss" onclick="window.notificationSystem.dismissNotification('${notification.id}')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-        });
-        
-        html += '</div>';
-        content.innerHTML = html;
+
+        const sorted = [...this.notifications].sort((a, b) => new Date(b.timestamp || b.created_at) - new Date(a.timestamp || a.created_at));
+        content.innerHTML = `
+            <div class="notification-list">
+                ${sorted.map((item) => {
+                    const time = this.getTimeAgo(item.timestamp || item.created_at);
+                    const icon = item.type === 'error' ? 'exclamation-circle' : item.type === 'warning' ? 'exclamation-triangle' : item.type === 'success' ? 'check-circle' : 'info-circle';
+                    return `
+                        <div class="notification-item ${item.read ? 'read' : 'unread'}" data-id="${item.id}">
+                            <div class="notification-item-icon"><i class="fas fa-${icon} notification-${item.type || 'info'}"></i></div>
+                            <div class="notification-item-content">
+                                <div class="notification-item-title">${item.title}</div>
+                                <div class="notification-item-message">${item.message}</div>
+                                <div class="notification-item-time">${time}</div>
+                            </div>
+                            <button class="notification-item-dismiss" onclick="window.notificationSystem.dismissNotification('${item.id}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
     }
-    
-    /**
-     * Get time ago string
-     * @param {string} timestamp - ISO timestamp
-     * @returns {string} Human readable time ago
-     */
+
     getTimeAgo(timestamp) {
-        const now = new Date();
-        const past = new Date(timestamp);
-        const diffMs = now - past;
+        const diffMs = new Date() - new Date(timestamp || new Date());
         const diffMins = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        
         if (diffMins < 1) return 'Just now';
         if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-        
-        return past.toLocaleDateString();
-    }
-    
-    /**
-     * Get icon name for notification type
-     * @param {string} type - Notification type
-     * @returns {string} Icon name
-     */
-    getTypeIcon(type) {
-        switch(type) {
-            case NOTIFICATION_TYPES.SUCCESS: return 'check-circle';
-            case NOTIFICATION_TYPES.ERROR: return 'exclamation-circle';
-            case NOTIFICATION_TYPES.WARNING: return 'exclamation-triangle';
-            default: return 'info-circle';
-        }
-    }
-    
-    /**
-     * Clear all notifications
-     */
-    clearAllNotifications() {
-        // Dismiss all toast notifications
-        document.querySelectorAll('.notification-toast').forEach(toast => {
-            const id = toast.dataset.notificationId;
-            if (id) this.dismissNotification(id);
-        });
-        
-        // Mark all as read
-        this.notifications.forEach(n => n.read = true);
-        
-        // Clear triggered notifications
-        this.triggeredNotifications.clear();
-        
-        // Update panel
-        this.loadNotificationsIntoPanel();
-        
-        // Update indicator
-        this.updateNotificationIndicator();
-        
-        console.log('All notifications cleared');
-    }
-    
-    /**
-     * Save notification to history (for persistent notifications)
-     * @param {object} notification - Notification object
-     */
-    saveNotificationToHistory(notification) {
-        try {
-            const history = JSON.parse(localStorage.getItem(`${CONFIG.APP_NAME}_notificationHistory`) || '[]');
-            history.push({
-                ...notification,
-                savedAt: new Date().toISOString()
-            });
-            
-            // Keep only last 50 notifications
-            if (history.length > 50) {
-                history.splice(0, history.length - 50);
-            }
-            
-            localStorage.setItem(`${CONFIG.APP_NAME}_notificationHistory`, JSON.stringify(history));
-        } catch (error) {
-            console.error('Error saving notification history:', error);
-        }
-    }
-    
-    /**
-     * Load notification history from localStorage
-     */
-    loadNotificationHistory() {
-        try {
-            const history = JSON.parse(localStorage.getItem(`${CONFIG.APP_NAME}_notificationHistory`) || '[]');
-            
-            // Check for persistent notifications that might need to be shown again
-            history.forEach(notification => {
-                if (notification.trigger === NOTIFICATION_TRIGGERS.NO_BUDGET_SET && 
-                    (!appState.budget || !appState.budget.amount)) {
-                    // Re-add to triggered set so it doesn't show again immediately
-                    this.triggeredNotifications.add(notification.trigger);
-                }
-            });
-        } catch (error) {
-            console.error('Error loading notification history:', error);
-        }
+        return new Date(timestamp).toLocaleDateString();
     }
 }
 
@@ -1440,51 +1749,115 @@ function addNotificationStyles() {
         
         /* Notification Bell */
         .notification-bell {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
+            position: relative;
+            top: auto;
+            right: auto;
+            transform: none;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.42);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+            min-width: 46px;
+            height: 42px;
+            padding: 0 14px;
+            border-radius: 12px;
+            display: inline-flex !important;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.12rem;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto;
+            z-index: 30;
+            flex-shrink: 0;
+            margin-left: auto;
         }
         
-        .notification-bell:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+        .notification-bell:hover,
+        .notification-bell:focus-visible,
+        .notification-bell:active {
+            background: rgba(255, 255, 255, 0.24);
+            transform: translateY(-1px) scale(1.02);
+            outline: none;
         }
         
         .notification-bell.has-notifications {
-            animation: pulse 2s infinite;
+            background: rgba(255, 255, 255, 0.22);
+            border-color: rgba(247, 37, 133, 0.45);
+            box-shadow: 0 0 0 4px rgba(247, 37, 133, 0.12);
         }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(247, 37, 133, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(247, 37, 133, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(247, 37, 133, 0); }
+
+        .notification-bell .bell-icon,
+        .notification-bell .bell-icon i,
+        .notification-bell .bell-label {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            filter: none !important;
+            text-shadow: none !important;
+        }
+
+        .notification-bell .bell-icon {
+            font-size: 1.15rem;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .notification-bell .bell-icon i {
+            font-size: 1.15rem;
+            line-height: 1;
+        }
+
+        .notification-bell:hover .bell-icon,
+        .notification-bell:hover .bell-icon i,
+        .notification-bell:hover .bell-label,
+        .notification-bell:focus-visible .bell-icon,
+        .notification-bell:focus-visible .bell-icon i,
+        .notification-bell:focus-visible .bell-label,
+        .notification-bell:active .bell-icon,
+        .notification-bell:active .bell-icon i,
+        .notification-bell:active .bell-label {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            filter: none !important;
+            text-shadow: none !important;
+        }
+
+        .notification-bell .bell-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
         }
         
         .notification-badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #f72585;
+            top: -6px;
+            right: -6px;
+            background: linear-gradient(135deg, #f72585, #ff5ca8);
             color: white;
-            font-size: 0.7rem;
-            font-weight: 600;
-            width: 18px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            min-width: 18px;
             height: 18px;
-            border-radius: 50%;
+            padding: 0 5px;
+            border-radius: 999px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 2px solid rgba(15, 23, 42, 0.2);
+            box-shadow: 0 4px 10px rgba(247, 37, 133, 0.25);
         }
         
         /* Notification Panel */
@@ -1671,11 +2044,28 @@ function addNotificationStyles() {
             }
             
             .notification-bell {
-                top: 15px;
-                right: 15px;
-                width: 36px;
-                height: 36px;
-                font-size: 1rem;
+                min-width: 42px;
+                height: 40px;
+                font-size: 0.95rem;
+                padding: 0 10px;
+                margin-left: auto;
+                display: inline-flex !important;
+            }
+
+            .notification-bell .bell-label {
+                display: none;
+            }
+
+            .notification-bell .bell-icon,
+            .notification-bell .bell-icon i {
+                min-width: 18px;
+                min-height: 18px;
+                width: 18px;
+                height: 18px;
+                font-size: 1.05rem;
+                opacity: 1 !important;
+                visibility: visible !important;
+                color: #ffffff !important;
             }
             
             .current-month-display {
@@ -1688,14 +2078,28 @@ function addNotificationStyles() {
         /* For small screens, adjust header layout */
         @media (max-width: 480px) {
             .app-header {
-                padding-bottom: 60px;
+                padding-bottom: 16px;
+                overflow: visible;
             }
             
             .notification-bell {
-                top: auto;
-                bottom: 10px;
-                right: 10px;
+                min-width: 40px;
+                height: 40px;
                 background: rgba(67, 97, 238, 0.9);
+                border-radius: 10px;
+                display: inline-flex !important;
+            }
+
+            .notification-bell .bell-icon,
+            .notification-bell .bell-icon i {
+                min-width: 18px;
+                min-height: 18px;
+                width: 18px;
+                height: 18px;
+                font-size: 1.1rem;
+                opacity: 1 !important;
+                visibility: visible !important;
+                color: #ffffff !important;
             }
         }
     `;
@@ -1717,12 +2121,6 @@ document.addEventListener("click", function (e) {
         showPage(page);
     }
 });
-  function formatCurrency(amount) {
-    if (isNaN(amount)) return "₦0";
-    
-    return `₦${Number(amount).toLocaleString('en-NG')}`;
-}
-
 // Update the initApp function to initialize notification system
 // Find the existing initApp function in app.js and add this line at the end:
 

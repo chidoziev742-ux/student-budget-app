@@ -37,7 +37,7 @@ import {
 import {
     getCurrentMonth,
     addExpenseToMonth
-} from './monthly-budget-system.js';
+} from './monthly-budget-system.js?v=4.0';
 
 /**
  * DEPRECATED: saveBudgetToFirestore

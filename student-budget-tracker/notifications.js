@@ -8,14 +8,22 @@
 
     // Helper: format currency
     function formatCurrency(amount) {
-        return `₦${parseFloat(amount).toFixed(2)}`;
+        const numericAmount = Number(amount);
+        const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+        return `₦${safeAmount.toLocaleString('en-NG', { minimumFractionDigits: Number.isInteger(safeAmount) ? 0 : 2, maximumFractionDigits: 2 })}`;
     }
 
-    // Request notification permission if not already granted
-    if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission().then(permission => {
-            console.log("Notification permission:", permission);
-        });
+    // Notifications are optional and must never block app startup.
+    if ("Notification" in window) {
+        if (Notification.permission === "default") {
+            Notification.requestPermission().then(permission => {
+                console.log("Notification permission:", permission);
+            }).catch((error) => {
+                console.warn("Notification permission request failed silently:", error);
+            });
+        } else {
+            console.log("Notification permission:", Notification.permission);
+        }
     }
 
     // Trigger budget notifications

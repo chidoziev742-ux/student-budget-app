@@ -1,15 +1,16 @@
 // Service Worker for Student Budget Tracker PWA
 // Provides offline caching while allowing Firebase Auth & Firestore to work normally
 
-const CACHE_NAME = 'student-budget-v4-fixed';
+const CACHE_NAME = 'student-budget-v5-financial-fix';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/styles.css',
   '/app.js',
   '/main.js',
-  '/auth.js',
-  '/dashboard.js',
+  '/auth.js?v=4.0',
+  '/dashboard.js?v=4.0',
+  '/monthly-budget-system.js?v=4.0',
   '/budget.js',
   '/expense.js',
   '/history.js',
