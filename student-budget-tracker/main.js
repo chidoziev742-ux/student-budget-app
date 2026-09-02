@@ -18,7 +18,7 @@ import {
     saveOnboardingProgress,
     completeOnboarding,
     setAuthStateCallback as firebaseSetAuthStateCallback
-} from './auth.js?v=4.0';
+} from './auth.js?v=5.0';
 import { 
     saveBudgetToFirestore, 
     saveExpensesToFirestore, 
@@ -937,7 +937,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // 2.5. Check for password recovery session BEFORE auth state handling
     // This ensures users with recovery tokens see the reset password form
-    const { isPasswordRecoverySession } = await import('./auth.js?v=4.0');
+    const { isPasswordRecoverySession } = await import('./auth.js?v=5.0');
     if (isPasswordRecoverySession()) {
         console.log('[AUTH] Password recovery session detected');
         // Show the reset password form directly
@@ -979,7 +979,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             window.initPasswordVisibilityToggles();
         }
         
-        return; // Skip normal auth flow
+        // Continue so the reset form handler is registered below.
     }
     
     // 3. Set up auth state callback BEFORE initializing auth
@@ -988,7 +988,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // IMPORTANT: Check if we're in a password recovery session
         // If so, don't redirect - stay on the reset password screen
-        const { isPasswordRecoverySession } = await import('./auth.js?v=4.0');
+        const { isPasswordRecoverySession } = await import('./auth.js?v=5.0');
         if (isPasswordRecoverySession()) {
             console.log('[AUTH] Password recovery session detected - staying on reset password screen');
             return;
@@ -1098,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             setAuthButtonLoading(submitBtn, true, 'Sending...');
             
             try {
-                const { requestPasswordReset } = await import('./auth.js');
+                const { requestPasswordReset } = await import('./auth.js?v=5.0');
                 const result = await requestPasswordReset(email);
                 
                 if (result.success) {
@@ -1161,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             try {
                 console.log('[RESET] calling updateUserPassword');
-                const { updateUserPassword } = await import('./auth.js');
+                const { updateUserPassword } = await import('./auth.js?v=5.0');
                 const result = await updateUserPassword(newPassword);
                 console.log('[RESET] updateUserPassword result:', result);
                 
@@ -1175,6 +1175,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                         window.history.replaceState(null, '', window.location.pathname + window.location.search);
                         console.log('[RESET] cleared recovery token from URL');
                     }
+
+                    const { signOutUser } = await import('./auth.js?v=5.0');
+                    await signOutUser();
                     
                     // Redirect to login after 2 seconds
                     setTimeout(() => {

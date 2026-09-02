@@ -22,6 +22,7 @@ import { supabase } from './supabase-client.js';
 
 let currentUser = null;
 let authStateCallback = null;
+let recoverySessionActive = false;
 
 function getSupabaseAuthErrorInfo(error) {
     if (!error) {
@@ -277,7 +278,13 @@ export function initAuth() {
             }
         });
 
-        supabase.auth.onAuthStateChange(async (_event, session) => {
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                recoverySessionActive = true;
+                console.log('[AUTH] PASSWORD_RECOVERY event received');
+            } else if (event === 'SIGNED_IN') {
+                recoverySessionActive = false;
+            }
             const user = session?.user || null;
             currentUser = mapSupabaseUserToAppUser(user);
 
@@ -450,6 +457,7 @@ export async function signIn(email, password) {
     
     if (isSupabaseConfigured()) {
         try {
+            recoverySessionActive = false;
             console.log('[Auth] calling supabase.auth.signInWithPassword');
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -570,6 +578,7 @@ export async function signOutUser() {
             if (error) {
                 return { success: false, error: error.message };
             }
+            recoverySessionActive = false;
             currentUser = null;
             if (authStateCallback) {
                 authStateCallback(false, null);
@@ -748,8 +757,7 @@ export async function requestPasswordReset(email) {
 
     try {
         // Determine redirect URL based on current environment
-        const baseUrl = window.location.origin + window.location.pathname;
-        const redirectUrl = baseUrl + '#reset-password';
+        const redirectUrl = window.location.origin + window.location.pathname;
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: redirectUrl
@@ -794,8 +802,12 @@ export async function updateUserPassword(newPassword) {
 
     try {
         // Check current session first
-        const { data: sessionData } = await supabase.auth.getSession();
-        console.log('[Auth] current session exists:', !!sessionData?.session);
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const hasSession = Boolean(sessionData?.session);
+        console.log('[AUTH] recovery session present:', hasSession);
+        if (sessionError || !hasSession) {
+            return { success: false, error: 'Reset link expired or invalid. Please request a new reset link.' };
+        }
         
         console.log('[Auth] calling supabase.auth.updateUser');
         const { data, error } = await supabase.auth.updateUser({
@@ -828,7 +840,7 @@ export function isPasswordRecoverySession() {
     const params = new URLSearchParams(hash.split('?')[1] || '');
     
     // Check for Supabase recovery token in URL
-    return (
+    return recoverySessionActive || (
         hash.includes('type=recovery') ||
         hash.includes('access_token=') ||
         params.get('type') === 'recovery'

@@ -1,23 +1,29 @@
 // Service Worker for Student Budget Tracker PWA
 // Provides offline caching while allowing Firebase Auth & Firestore to work normally
 
-const CACHE_NAME = 'student-budget-v5-financial-fix';
+const CACHE_NAME = 'student-budget-v6-auth-state-fix';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/main.js',
-  '/auth.js?v=4.0',
-  '/dashboard.js?v=4.0',
-  '/monthly-budget-system.js?v=4.0',
-  '/budget.js',
-  '/expense.js',
-  '/history.js',
-  '/savings.js',
-  '/notifications.js',
-  '/firebase-config.js',
-  '/firestore-sync.js'
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './main.js?v=5.0',
+  './auth.js?v=5.0',
+  './dashboard.js?v=4.0',
+  './monthly-budget-system.js?v=4.0',
+  './budget.js',
+  './expense.js',
+  './history.js',
+  './savings.js',
+  './notifications.js',
+  './firebase-config.js',
+  './firestore-sync.js',
+  './manifest.json',
+  './icons/favicon-32.png',
+  './icons/apple-touch-icon.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-512-maskable.png'
 ];
 
 // Install event: cache static assets
