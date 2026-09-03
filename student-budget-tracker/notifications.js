@@ -17,12 +17,12 @@
     if ("Notification" in window) {
         if (Notification.permission === "default") {
             Notification.requestPermission().then(permission => {
-                console.log("Notification permission:", permission);
+                window.debugLog?.('[NOTIFICATIONS] Notification permission:', permission);
             }).catch((error) => {
                 console.warn("Notification permission request failed silently:", error);
             });
         } else {
-            console.log("Notification permission:", Notification.permission);
+            window.debugLog?.('[NOTIFICATIONS] Notification permission:', Notification.permission);
         }
     }
 

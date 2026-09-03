@@ -96,7 +96,7 @@ function initApp() {
     // Update page content to render loaded data
     updateDashboard();
     
-    console.log(`${CONFIG.APP_NAME} v${CONFIG.VERSION} initialized`);
+    window.debugLog?.(`[DASHBOARD] ${CONFIG.APP_NAME} v${CONFIG.VERSION} initialized`);
 }
 
 /**
@@ -151,7 +151,7 @@ function loadAppData() {
             savingsGoal: 0
         };
         
-        console.log('App data initialized (financial data will load from Supabase)');
+        window.debugLog?.('[FINANCE] App data initialized (financial data will load from Supabase)');
     } catch (error) {
         console.error('Error initializing app data:', error);
         // Initialize with default values
@@ -178,7 +178,7 @@ function saveAppData() {
         // If needed in future, save non-financial UI preferences only to localStorage
         // Example: UI state, preference flags, etc. (these are not currently needed)
         
-        console.log('App data sync: Financial data managed by Firebase Firestore');
+        window.debugLog?.('[FINANCE] App data sync: Financial data managed by Supabase monthly system');
     } catch (error) {
         console.error('Error in saveAppData:', error);
     }
@@ -252,7 +252,7 @@ function setupEventListeners() {
     }
     
     // Savings calculator
-    const dailySavingsInput = document.getElementById('daily-savings');
+    const dailySavingsInput = document.getElementById('daily-savings-calculator');
     if (dailySavingsInput) {
         dailySavingsInput.addEventListener('input', updateSavingsCalculator);
     }
@@ -686,7 +686,7 @@ function clearHistoryFilters() {
  * Update savings calculator
  */
 function updateSavingsCalculator() {
-    const dailyInput = document.getElementById('daily-savings');
+    const dailyInput = document.getElementById('daily-savings-calculator');
     if (!dailyInput) return;
     
     const daily = parseFloat(dailyInput.value) || 0;
@@ -883,7 +883,7 @@ class NotificationSystem {
         this.updateNotificationIndicator();
         setInterval(() => this.checkNotifications(), 30000);
         setTimeout(() => this.checkNotifications(), 1500);
-        console.log('Student notification system initialized');
+        window.debugLog?.('[NOTIFICATIONS] Student notification system initialized');
     }
 
     async getCurrentUserId() {
@@ -895,7 +895,7 @@ class NotificationSystem {
                 const { data: { user: supaUser } } = await window.supabase.auth.getUser();
                 if (supaUser?.id) return supaUser.id;
             } catch (error) {
-                console.warn('[Notifications] Unable to resolve authenticated user ID:', error.message);
+                window.debugWarn?.('[NOTIFICATIONS] Unable to resolve authenticated user ID:', error.message);
             }
         }
 
@@ -911,7 +911,7 @@ class NotificationSystem {
                 }
             }
         } catch (error) {
-            console.warn('[Notifications] Could not read notification preference:', error.message);
+            window.debugWarn?.('[NOTIFICATIONS] Could not read notification preference:', error.message);
         }
 
         const storedValue = localStorage.getItem(`${CONFIG.APP_NAME}_notifications_enabled`);
@@ -936,10 +936,10 @@ class NotificationSystem {
             });
 
             if (error) {
-                console.warn('[Notifications] auth preference update warning:', error.message);
+                window.debugWarn?.('[NOTIFICATIONS] auth preference update warning:', error.message);
             }
         } catch (error) {
-            console.warn('[Notifications] preference save failed:', error.message);
+            window.debugWarn?.('[NOTIFICATIONS] preference save failed:', error.message);
         }
 
         return { success: true };
@@ -966,7 +966,7 @@ class NotificationSystem {
                 .order('created_at', { ascending: false });
 
             if (error) {
-                console.warn('[Notifications] Load failed:', error.message);
+                window.debugWarn?.('[NOTIFICATIONS] Load failed:', error.message);
                 this.notifications = [];
                 return;
             }
@@ -986,7 +986,7 @@ class NotificationSystem {
                     created_at: item.created_at
                 }));
         } catch (error) {
-            console.warn('[Notifications] refresh failed:', error.message);
+            window.debugWarn?.('[NOTIFICATIONS] refresh failed:', error.message);
             this.notifications = [];
         }
 
@@ -1010,7 +1010,7 @@ class NotificationSystem {
 
             return !error && Array.isArray(data) && data.length > 0;
         } catch (error) {
-            console.warn('[Notifications] duplicate check failed:', error.message);
+            window.debugWarn?.('[NOTIFICATIONS] duplicate check failed:', error.message);
             return false;
         }
     }
@@ -1054,7 +1054,7 @@ class NotificationSystem {
                 .single();
 
             if (error) {
-                console.warn('[Notifications] insert failed:', error.message);
+                window.debugWarn?.('[NOTIFICATIONS] insert failed:', error.message);
                 return null;
             }
 
@@ -1510,6 +1510,21 @@ class NotificationSystem {
         } else {
             bellIcon.classList.remove('has-notifications');
         }
+
+        const bellStyle = getComputedStyle(bellIcon);
+        const bellRect = bellIcon.getBoundingClientRect();
+        window.debugLog?.('[NOTIFICATIONS] Bell rendered:', {
+            count: document.querySelectorAll('#notification-bell').length,
+            display: bellStyle.display,
+            visibility: bellStyle.visibility,
+            opacity: bellStyle.opacity,
+            width: bellRect.width,
+            height: bellRect.height,
+            left: bellRect.left,
+            top: bellRect.top,
+            pointerEvents: bellStyle.pointerEvents,
+            viewportWidth: window.innerWidth
+        });
     }
 
     showNotificationPanel() {

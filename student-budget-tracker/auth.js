@@ -145,7 +145,7 @@ async function ensureSupabaseOnboardingRecord(userId, onboardingData = {}) {
     const currentValue = onboardingData || {};
     const existingResult = await supabase
         .from('onboarding')
-        .select('created_at, completed')
+        .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -155,13 +155,13 @@ async function ensureSupabaseOnboardingRecord(userId, onboardingData = {}) {
 
     const payload = {
         user_id: userId,
-        completed: Boolean(currentValue.completed ?? false),
-        income_source: currentValue.income_source ?? null,
-        income_amount: currentValue.income_amount ?? null,
-        income_frequency: currentValue.income_frequency ?? null,
-        next_income_date: currentValue.next_income_date ?? null,
-        spending_categories: Array.isArray(currentValue.spending_categories) ? currentValue.spending_categories : [],
-        safe_daily_spending: currentValue.safe_daily_spending ?? null,
+        completed: Boolean(currentValue.completed ?? existingResult.data?.completed ?? false),
+        income_source: currentValue.income_source ?? existingResult.data?.income_source ?? null,
+        income_amount: currentValue.income_amount ?? existingResult.data?.income_amount ?? null,
+        income_frequency: currentValue.income_frequency ?? existingResult.data?.income_frequency ?? null,
+        next_income_date: currentValue.next_income_date ?? existingResult.data?.next_income_date ?? null,
+        spending_categories: Array.isArray(currentValue.spending_categories) ? currentValue.spending_categories : (existingResult.data?.spending_categories || []),
+        safe_daily_spending: currentValue.safe_daily_spending ?? existingResult.data?.safe_daily_spending ?? null,
         updated_at: new Date().toISOString(),
         created_at: existingResult.data?.created_at || new Date().toISOString()
     };
@@ -181,10 +181,10 @@ async function ensureSupabaseOnboardingRecord(userId, onboardingData = {}) {
 }
 
 export async function getOnboardingStatus(userId = currentUser?.uid) {
-    console.log('[ONBOARDING] getOnboardingStatus called, userId:', userId, 'Supabase configured:', isSupabaseConfigured());
+    window.debugLog?.('[AUTH-DIAG] getOnboardingStatus called, userId:', userId, 'Supabase configured:', isSupabaseConfigured());
     
     if (!userId || !isSupabaseConfigured()) {
-        console.log('[ONBOARDING] returning completed: false (no userId or Supabase not configured)');
+        window.debugLog?.('[AUTH-DIAG] returning completed: false (no userId or Supabase not configured)');
         return { success: true, completed: false, onboarding: null };
     }
 
@@ -194,7 +194,7 @@ export async function getOnboardingStatus(userId = currentUser?.uid) {
         .eq('user_id', userId)
         .maybeSingle();
 
-    console.log('[ONBOARDING] query result - data:', data ? 'found' : 'null', 'error:', error?.message || 'none');
+    window.debugLog?.('[AUTH-DIAG] onboarding query result - data:', data ? 'found' : 'null', 'error:', error?.message || 'none');
 
     if (error && error.code !== 'PGRST116') {
         console.warn('[Supabase] onboarding status warning:', error.message);
@@ -203,7 +203,7 @@ export async function getOnboardingStatus(userId = currentUser?.uid) {
     const onboarding = data || null;
     const completed = Boolean(onboarding?.completed);
     
-    console.log('[ONBOARDING] returning completed:', completed);
+    window.debugLog?.('[AUTH-DIAG] returning completed:', completed);
     return {
         success: true,
         completed,
@@ -257,7 +257,15 @@ export function setAuthStateCallback(callback) {
  */
 export function initAuth() {
     if (isSupabaseConfigured()) {
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
+        supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+            window.debugLog?.('[AUTH-DIAG] getSession completed:', {
+                succeeded: !error,
+                errorCode: error?.code || null,
+                errorMessage: error?.message || null,
+                sessionExists: Boolean(session),
+                userExists: Boolean(session?.user),
+                expiresAt: session?.expires_at || null
+            });
             const user = session?.user || null;
             currentUser = mapSupabaseUserToAppUser(user);
 
@@ -279,9 +287,16 @@ export function initAuth() {
         });
 
         supabase.auth.onAuthStateChange(async (event, session) => {
+            window.debugLog?.('[AUTH-DIAG] onAuthStateChange:', {
+                event,
+                sessionExists: Boolean(session),
+                userExists: Boolean(session?.user),
+                expiresAt: session?.expires_at || null,
+                recoverySessionActive
+            });
             if (event === 'PASSWORD_RECOVERY') {
                 recoverySessionActive = true;
-                console.log('[AUTH] PASSWORD_RECOVERY event received');
+                window.debugLog?.('[AUTH-DIAG] PASSWORD_RECOVERY event received');
             } else if (event === 'SIGNED_IN') {
                 recoverySessionActive = false;
             }
@@ -368,13 +383,21 @@ export async function signUp(email, password, displayName, gender) {
             });
 
             if (error) {
+                window.debugLog?.('[AUTH-DIAG] signInWithPassword failed:', {
+                    errorCode: error.code || null,
+                    errorMessage: error.message || null
+                });
                 const authError = getSupabaseAuthErrorInfo(error);
                 return { success: false, error: authError.message, needsVerification: authError.needsVerification, email };
             }
 
             const sessionExists = !!data?.session;
             const signedUser = data?.user || null;
-
+            window.debugLog?.('[AUTH-DIAG] signInWithPassword succeeded:', {
+                sessionExists,
+                userExists: Boolean(signedUser),
+                expiresAt: data?.session?.expires_at || null
+            });
             if (!sessionExists && signedUser && !signedUser.email_confirmed_at) {
                 return {
                     success: false,
@@ -453,16 +476,15 @@ export async function signUp(email, password, displayName, gender) {
  * Sign in an existing user
  */
 export async function signIn(email, password) {
-    console.log('[Auth] signIn called, Supabase configured:', isSupabaseConfigured());
+    window.debugLog?.('[AUTH-DIAG] signIn called, Supabase configured:', isSupabaseConfigured());
     
     if (isSupabaseConfigured()) {
         try {
             recoverySessionActive = false;
-            console.log('[Auth] calling supabase.auth.signInWithPassword');
+            window.debugLog?.('[AUTH-DIAG] calling supabase.auth.signInWithPassword');
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                console.warn('[Auth] signIn error:', error.message);
                 const authError = getSupabaseAuthErrorInfo(error);
                 return {
                     success: false,
@@ -473,7 +495,6 @@ export async function signIn(email, password) {
                 };
             }
 
-            console.log('[Auth] signIn success, user:', data?.user?.email);
             const signedUser = data?.user || null;
             currentUser = mapSupabaseUserToAppUser(signedUser);
 
@@ -501,9 +522,9 @@ export async function signIn(email, password) {
                         completed: false,
                         spending_categories: []
                     });
-                    console.log('[Auth] created new onboarding record for user');
+                    window.debugLog?.('[AUTH-DIAG] created new onboarding record for user');
                 } else {
-                    console.log('[Auth] onboarding record already exists, preserving status');
+                    window.debugLog?.('[AUTH-DIAG] onboarding record already exists, preserving status');
                 }
             }
 
@@ -739,7 +760,7 @@ export async function getGreetingMessage() {
  * @param {string} email - The email address to send reset link to
  */
 export async function requestPasswordReset(email) {
-    console.log('[Auth] requestPasswordReset called');
+    window.debugLog?.('[AUTH-DIAG] requestPasswordReset called');
     
     if (!email) {
         return { success: false, error: 'Please enter your email address.' };
@@ -783,20 +804,20 @@ export async function requestPasswordReset(email) {
  * @param {string} newPassword - The new password
  */
 export async function updateUserPassword(newPassword) {
-    console.log('[Auth] updateUserPassword called');
+    window.debugLog?.('[AUTH-DIAG] updateUserPassword called');
     
     if (!newPassword) {
-        console.log('[Auth] updateUserPassword: empty password');
+        window.debugLog?.('[AUTH-DIAG] updateUserPassword: empty password');
         return { success: false, error: 'Please enter a new password.' };
     }
 
     if (newPassword.length < 6) {
-        console.log('[Auth] updateUserPassword: password too short');
+        window.debugLog?.('[AUTH-DIAG] updateUserPassword: password too short');
         return { success: false, error: 'Password must be at least 6 characters.' };
     }
 
     if (!isSupabaseConfigured()) {
-        console.log('[Auth] updateUserPassword: Supabase not configured');
+        window.debugLog?.('[AUTH-DIAG] updateUserPassword: Supabase not configured');
         return { success: false, error: 'Password update is not available.' };
     }
 
@@ -804,24 +825,24 @@ export async function updateUserPassword(newPassword) {
         // Check current session first
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         const hasSession = Boolean(sessionData?.session);
-        console.log('[AUTH] recovery session present:', hasSession);
+        window.debugLog?.('[AUTH-DIAG] recovery session present:', hasSession);
         if (sessionError || !hasSession) {
             return { success: false, error: 'Reset link expired or invalid. Please request a new reset link.' };
         }
         
-        console.log('[Auth] calling supabase.auth.updateUser');
+        window.debugLog?.('[AUTH-DIAG] calling supabase.auth.updateUser');
         const { data, error } = await supabase.auth.updateUser({
             password: newPassword
         });
 
-        console.log('[Auth] updateUser result - data:', !!data, 'error:', error?.message || 'none');
+        window.debugLog?.('[AUTH-DIAG] updateUser result - data:', !!data, 'error:', error?.message || 'none');
 
         if (error) {
             console.warn('[Auth] Password update failed:', error.message);
             return { success: false, error: 'Unable to update password. Please try again.' };
         }
 
-        console.log('[Auth] Password updated successfully');
+        window.debugLog?.('[AUTH-DIAG] Password updated successfully');
         return {
             success: true,
             message: 'Password updated successfully!'

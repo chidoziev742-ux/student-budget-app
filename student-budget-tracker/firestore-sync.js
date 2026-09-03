@@ -45,7 +45,7 @@ import {
  * This function is kept for backwards compatibility only and should not be called.
  */
 export async function saveBudgetToFirestore(uid, budget) {
-    console.warn('[Firestore] saveBudgetToFirestore is DEPRECATED. Use monthly system instead.');
+    window.debugWarn?.('[FINANCE] saveBudgetToFirestore is deprecated. Use monthly system instead.');
     return { success: true };
 }
 
@@ -67,7 +67,7 @@ export async function addExpenseToFirestore(uid, expense) {
         });
 
         if (result.success) {
-            console.log('Expense added to monthly system for', month);
+            window.debugLog?.('[FINANCE] Expense added to monthly system for', month);
             return { success: true, id: result.expenseEntry?.id || Date.now().toString() };
         } else {
             throw new Error(result.error);
@@ -105,7 +105,7 @@ export async function deleteExpenseFromFirestore(uid, expenseId) {
         const expenseRef = doc(db, 'users', uid, 'expenses', expenseId);
         await deleteDoc(expenseRef);
 
-        console.log('Expense deleted:', expenseId);
+        window.debugLog?.('[FINANCE] Expense deleted:', expenseId);
         return { success: true };
     } catch (error) {
         console.error('Error deleting expense:', error);
@@ -118,7 +118,7 @@ export async function deleteExpenseFromFirestore(uid, expenseId) {
  */
 export async function loadExpensesFromFirestore(uid) {
     try {
-        console.log(`[Firestore] Loading expenses from users/${uid}/expenses/`);
+        window.debugLog?.('[FINANCE] Loading expenses from the monthly system');
         const expensesRef = collection(db, 'users', uid, 'expenses');
         const q = query(expensesRef, orderBy('date', 'desc'));
         const querySnapshot = await getDocs(q);
@@ -131,9 +131,9 @@ export async function loadExpensesFromFirestore(uid) {
             });
         });
 
-        console.log(`[Firestore] Loaded ${expenses.length} expenses from Firestore`);
+        window.debugLog?.(`[FINANCE] Loaded ${expenses.length} expenses from Firestore`);
         if (expenses.length > 0) {
-            console.log('[Firestore] Sample expense:', expenses[0]);
+            window.debugLog?.('[FINANCE] Sample expense loaded');
         }
         return {
             success: true,
@@ -155,7 +155,7 @@ export async function loadExpensesFromFirestore(uid) {
  * This function is kept for backwards compatibility only and should not be called.
  */
 export async function saveExpensesToFirestore(uid, expenses) {
-    console.warn('[Firestore] saveExpensesToFirestore is DEPRECATED. Use monthly system instead.');
+    window.debugWarn?.('[FINANCE] saveExpensesToFirestore is deprecated. Use monthly system instead.');
     return { success: true };
 }
 
@@ -165,7 +165,7 @@ export async function saveExpensesToFirestore(uid, expenses) {
  * This function is kept for backwards compatibility only and should not be called.
  */
 export async function saveSavingsGoalToFirestore(uid, savingsGoal) {
-    console.warn('[Firestore] saveSavingsGoalToFirestore is DEPRECATED. Use monthly system instead.');
+    window.debugWarn?.('[FINANCE] saveSavingsGoalToFirestore is deprecated. Use monthly system instead.');
     return { success: true };
 }
 
@@ -175,7 +175,7 @@ export async function saveSavingsGoalToFirestore(uid, savingsGoal) {
  * This function is kept for backwards compatibility only and should not be called.
  */
 export async function loadBudgetFromFirestore(uid) {
-    console.warn('[Firestore] loadBudgetFromFirestore is DEPRECATED. Use monthly system instead.');
+    window.debugWarn?.('[FINANCE] loadBudgetFromFirestore is deprecated. Use monthly system instead.');
     return {
         success: true,
         data: {
@@ -273,7 +273,7 @@ export async function clearUserDataFromFirestore(uid) {
         const monthDeletes = monthsSnapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
         await Promise.all(monthDeletes);
 
-        console.log('Cleared user Firestore data for', uid);
+        window.debugLog?.('[FINANCE] Cleared user Firestore data');
         return { success: true };
     } catch (error) {
         console.error('Error clearing Firestore user data:', error);
@@ -308,6 +308,6 @@ export async function updateBalanceInFirestore(uid, appState) {
  * Migration is one-time only via localStorage flag.
  */
 export async function migrateOldDataToMonthly(uid, appState) {
-    console.warn('[Firestore] migrateOldDataToMonthly is disabled. App uses monthly system exclusively.');
+    window.debugWarn?.('[FINANCE] migrateOldDataToMonthly is disabled. App uses monthly system exclusively.');
     return { success: true, migrated: false };
 }

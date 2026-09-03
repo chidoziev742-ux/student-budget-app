@@ -2,9 +2,18 @@
 // Provides offline caching while allowing Firebase Auth & Firestore to work normally
 
 const CACHE_NAME = 'student-budget-v6-auth-state-fix';
+const DEBUG_MODE = false;
+const debugLog = (...args) => {
+  if (DEBUG_MODE) console.log(...args);
+};
+const debugWarn = (...args) => {
+  if (DEBUG_MODE) console.warn(...args);
+};
+
 const STATIC_ASSETS = [
   './',
   './index.html',
+  './debug.js?v=1.0',
   './styles.css',
   './app.js',
   './main.js?v=5.0',
@@ -28,22 +37,22 @@ const STATIC_ASSETS = [
 
 // Install event: cache static assets
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing...');
+  debugLog('[SERVICE-WORKER] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[Service Worker] Caching static assets');
+        debugLog('[SERVICE-WORKER] Caching static assets');
         // Cache all static assets, continue on error for missing files
         return Promise.allSettled(
           STATIC_ASSETS.map(asset =>
             cache.add(asset).catch(() => {
-              console.log(`[Service Worker] Could not cache ${asset}, may not exist yet`);
+              debugWarn(`[SERVICE-WORKER] Could not cache ${asset}, may not exist yet`);
             })
           )
         );
       })
       .then(() => {
-        console.log('[Service Worker] Installation complete');
+        debugLog('[SERVICE-WORKER] Installation complete');
         // Force service worker to activate immediately
         return self.skipWaiting();
       })
@@ -52,13 +61,13 @@ self.addEventListener('install', (event) => {
 
 // Activate event: clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activating...');
+  debugLog('[SERVICE-WORKER] Activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cacheName);
+            debugLog('[SERVICE-WORKER] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -240,4 +249,4 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-console.log('[Service Worker] Loaded successfully');
+debugLog('[SERVICE-WORKER] Loaded successfully');

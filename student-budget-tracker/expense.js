@@ -227,7 +227,7 @@ async function addExpense(expense) {
 
         saveAppData();
 
-        console.log(
+        window.debugLog?.(
             `Expense saved successfully to monthly system: ${month}`,
             savedExpense
         );
@@ -389,9 +389,7 @@ async function deleteExpense(expenseId) {
             };
         }
 
-        console.log('[DELETE] Expense:', expense);
-        console.log('[DELETE] Month:', month);
-        console.log('[DELETE] ID:', expenseId);
+        window.debugLog?.('[FINANCE] Deleting expense:', { month, expenseId });
 
         // Delete ONLY from the monthly system
         const result =
@@ -416,7 +414,7 @@ async function deleteExpense(expenseId) {
         // Save the updated local state
         saveAppData();
 
-        console.log(
+        window.debugLog?.(
             `[DELETE] Expense ${expenseId} successfully deleted`
         );
 

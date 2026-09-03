@@ -980,6 +980,35 @@ textarea {
     background: linear-gradient(to right, #4cc9f0, #4361ee);
 }
 
+.savings-goal-editor {
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--space-lg);
+}
+
+.savings-goal-editor label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--gray-color);
+    font-weight: 600;
+}
+
+.savings-goal-editor-row {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+}
+
+.savings-goal-editor-row input {
+    flex: 1;
+}
+
+@media (max-width: 480px) {
+    .savings-goal-editor-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
 /* Tips List */
 .tips-list {
     list-style: none;

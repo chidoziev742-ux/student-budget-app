@@ -32,6 +32,63 @@ async function loadSavingsMonthData() {
     savingsMonthData = result?.success ? result : fallbackData;
 }
 
+async function loadDailySpendingAmount() {
+    const input = document.getElementById('daily-savings');
+    const user = window.firebaseAuth?.getCurrentUser?.();
+    if (!input || !user || !window.firebaseAuth?.getOnboardingStatus) return;
+
+    const result = await window.firebaseAuth.getOnboardingStatus(user.uid);
+    const savedValue = result?.onboarding?.safe_daily_spending;
+    if (savedValue != null) input.value = savedValue;
+}
+
+async function saveDailySpendingAmount() {
+    const input = document.getElementById('daily-savings');
+    const user = window.firebaseAuth?.getCurrentUser?.();
+    if (!input || !user || !window.firebaseAuth?.saveOnboardingProgress) return;
+
+    const value = Number(input.value || 0);
+    if (!Number.isFinite(value) || value < 0) return;
+
+    const result = await window.firebaseAuth.saveOnboardingProgress({
+        safe_daily_spending: value,
+        completed: true
+    }, user.uid);
+    const status = document.getElementById('daily-savings-save-status');
+    if (status) status.textContent = result?.success ? 'Saved' : (result?.error || 'Could not save');
+    if (result?.success && window.updateDashboard) await window.updateDashboard();
+}
+
+async function handleSafeSpendSubmit(event) {
+    event.preventDefault();
+    await saveDailySpendingAmount();
+}
+
+async function handleSavingsGoalSubmit(event) {
+    event.preventDefault();
+    const user = window.firebaseAuth?.getCurrentUser?.();
+    const input = document.getElementById('savings-goal-amount');
+    const amount = Number(input?.value || 0);
+    if (!user || !Number.isFinite(amount) || amount < 0) {
+        showToast('Please enter a valid savings goal', 'error');
+        return;
+    }
+
+    const result = await window.monthlyBudget?.updateSavingsGoal?.(
+        user.uid,
+        window.monthlyBudget?.getCurrentMonth?.(),
+        amount
+    );
+    if (!result?.success) {
+        showToast(result?.error || 'Failed to save savings goal', 'error');
+        return;
+    }
+
+    showToast('Savings goal saved', 'success');
+    await updateSavingsPage();
+    if (window.updateDashboard) await window.updateDashboard();
+}
+
 /**
  * Calculate current savings
  * Savings = income - expenses (money you've actually saved this month)
@@ -116,7 +173,10 @@ function populateSavingsGoalSelect() {
 async function updateSavingsPage() {
     // Load current month data first
     await loadSavingsMonthData();
+    await loadDailySpendingAmount();
     populateSavingsGoalSelect();
+    const goalInput = document.getElementById('savings-goal-amount');
+    if (goalInput) goalInput.value = Number(savingsMonthData?.savingsGoal || 0) || '';
     await updateSavingsGoalDisplay();
     // If you had a calculator section, you can implement it here
     if (typeof updateSavingsCalculator === 'function') updateSavingsCalculator();
@@ -127,6 +187,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (form) {
         form.addEventListener('submit', handleAddSavingsSubmit);
     }
+    const goalForm = document.getElementById('savings-goal-form');
+    if (goalForm) goalForm.addEventListener('submit', handleSavingsGoalSubmit);
+    const dailyInput = document.getElementById('daily-savings');
+    if (dailyInput) dailyInput.addEventListener('change', saveDailySpendingAmount);
+    const safeSpendForm = document.getElementById('safe-spend-form');
+    if (safeSpendForm) safeSpendForm.addEventListener('submit', handleSafeSpendSubmit);
     updateSavingsPage();
 });
 

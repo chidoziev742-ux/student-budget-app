@@ -352,8 +352,8 @@ export async function ensureMonthDocumentExists(userId, month = null) {
         }
 
         const { monthStart, monthEnd } = getSupabaseMonthRange(targetMonth);
-        console.log("[FINANCE] authenticatedUserId:", authenticatedUserId);
-        console.log("[FINANCE] month range:", monthStart, "to", monthEnd);
+        window.debugLog?.('[FINANCE] authenticated user resolved');
+        window.debugLog?.('[FINANCE] month range:', monthStart, 'to', monthEnd);
         const { data, error } = await supabase
             .from('budgets')
             .select('id')
@@ -398,7 +398,7 @@ export async function ensureMonthDocumentExists(userId, month = null) {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             });
-            console.log(`Created new month document: ${month}`);
+            window.debugLog?.(`[FINANCE] Created new month document: ${month}`);
         }
         
         return { success: true, month };
@@ -938,7 +938,7 @@ export async function getSavings(userId, month) {
  */
 export async function getMonthData(userId, month) {
     const targetMonth = month || getCurrentMonth();
-    console.log("[FINANCE] getMonthData called - userId:", userId, "month:", targetMonth);
+    window.debugLog?.('[FINANCE] getMonthData called for month:', targetMonth);
 
     if (!shouldUseFirebaseMonthlySystem() && isSupabaseConfigured()) {
         const authenticatedUserId = await getAuthenticatedUserId(userId);
@@ -965,11 +965,16 @@ export async function getMonthData(userId, month) {
         if (categoryBudgetError) {
             return { success: false, error: categoryBudgetError.message };
         }
-        console.log("[FINANCE] Supabase responses:");
-        console.log("  budget:", budgetData, "error:", budgetError?.message || "none");
-        console.log("  income rows:", incomeRows?.length || 0, "error:", incomeError?.message || "none");
-        console.log("  expense rows:", expenseRows?.length || 0, "error:", expenseError?.message || "none");
-        console.log("  savings goals:", goalData?.length || 0, "error:", goalError?.message || "none");
+        window.debugLog?.('[FINANCE] Supabase responses:', {
+            budgetExists: Boolean(budgetData),
+            budgetError: budgetError?.message || null,
+            incomeRows: incomeRows?.length || 0,
+            incomeError: incomeError?.message || null,
+            expenseRows: expenseRows?.length || 0,
+            expenseError: expenseError?.message || null,
+            savingsGoals: goalData?.length || 0,
+            savingsGoalError: goalError?.message || null
+        });
         if (incomeError) {
             return { success: false, error: incomeError.message };
         }

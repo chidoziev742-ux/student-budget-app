@@ -57,7 +57,7 @@ async function updateHistoryPage() {
         // Keep appState synchronized with the monthly source of truth.
         appState.expenses = allExpenses;
 
-        console.log(
+        window.debugLog?.(
             `[History] Loaded ${allExpenses.length} expenses from monthly system`
         );
 
@@ -160,7 +160,10 @@ function updateHistoryList() {
     }
     
     if (selectedCategory !== 'all') {
-        filteredExpenses = filteredExpenses.filter(expense => expense.category === selectedCategory);
+        filteredExpenses = filteredExpenses.filter(expense => {
+            const categoryKey = window.getExpenseCategoryKey?.(expense.category) || 'other';
+            return categoryKey === selectedCategory;
+        });
     }
     
     // Sort by date (newest first)

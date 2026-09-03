@@ -517,6 +517,14 @@
     font-weight: 500;
 }
 
+.safe-spend-status.is-reached {
+    color: #b7791f;
+}
+
+.safe-spend-status.is-warning {
+    color: #c53030;
+}
+
 .safe-spend-check {
     width: 20px;
     height: 20px;

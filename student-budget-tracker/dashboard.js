@@ -10,7 +10,7 @@ function calculateRemainingBalance(totalIncome, expenses) {
 }
 
 async function loadDashboardMonthData() {
-    console.log("[DASHBOARD] loadDashboardMonthData called");
+    window.debugLog?.('[DASHBOARD] loadDashboardMonthData called');
     const user = window.firebaseAuth?.getCurrentUser?.();
     const currentMonth = window.monthlyBudget?.getCurrentMonth?.();
     const fallbackData = {
@@ -34,9 +34,14 @@ async function loadDashboardMonthData() {
 
     try {
         const result = await window.monthlyBudget.getMonthData(user.uid, currentMonth);
-        console.log("[DASHBOARD] getMonthData result:", result);
+        window.debugLog?.('[DASHBOARD] getMonthData result:', result);
         dashboardMonthData = result?.success ? result : fallbackData;
-        console.log("[DASHBOARD] dashboardMonthData:", dashboardMonthData);
+        const onboardingResult = await window.firebaseAuth?.getOnboardingStatus?.(user.uid);
+        const savedDailySpending = onboardingResult?.onboarding?.safe_daily_spending;
+        if (savedDailySpending != null) {
+            dashboardMonthData.safeDailySpending = Number(savedDailySpending) || 0;
+        }
+        window.debugLog?.('[DASHBOARD] dashboardMonthData:', dashboardMonthData);
     } catch (error) {
         console.error('[Dashboard] Failed to load month data:', error);
         dashboardMonthData = fallbackData;
@@ -130,13 +135,31 @@ function calculateSafeToSpendToday(availableBalance, safeDailyAmount, todayExpen
     return Math.min(Math.max(safeSpend, 0), balance);
 }
 
+function calculateSafeToSpendStatus(availableBalance, safeDailyAmount, todayExpensesTotal, nextIncomeDate, incomeFrequency) {
+    const balance = Number(availableBalance) || 0;
+    let plannedDaily = Number(safeDailyAmount) || 0;
+    if (plannedDaily <= 0) {
+        const daysUntilNextIncome = getDaysUntilNextIncome(nextIncomeDate, incomeFrequency);
+        plannedDaily = balance / Math.max(1, daysUntilNextIncome);
+    }
+
+    const spentToday = Number(todayExpensesTotal) || 0;
+    const difference = plannedDaily - spentToday;
+
+    return {
+        amount: difference >= 0 ? Math.min(difference, Math.max(balance, 0)) : Math.abs(difference),
+        state: difference > 0 ? 'on-track' : difference === 0 ? 'limit-reached' : 'over-limit'
+    };
+}
+
 window.getDaysUntilNextIncome = getDaysUntilNextIncome;
 window.getTodayExpensesTotal = getTodayExpensesTotal;
 window.calculateSafeToSpendToday = calculateSafeToSpendToday;
+window.calculateSafeToSpendStatus = calculateSafeToSpendStatus;
 
 // --- Summary cards ---
 function updateSummaryCards() {
-    console.log("[DASHBOARD] updateSummaryCards called, data:", dashboardMonthData);
+    window.debugLog?.('[DASHBOARD] updateSummaryCards called, data:', dashboardMonthData);
     const totalBudget = dashboardMonthData?.budget || 0;
     const totalIncome = dashboardMonthData?.totalIncome || 0;
     const expenses = dashboardMonthData?.expenses || [];
@@ -175,7 +198,7 @@ function updateSummaryCards() {
         const safeDailyAmount = Number(profile.safe_daily_spending ?? dashboardMonthData?.safeDailySpending ?? 0) || 0;
         const todayExpensesTotal = getTodayExpensesTotal(expenses);
 
-        const safeAmount = calculateSafeToSpendToday(
+        const safeStatus = calculateSafeToSpendStatus(
             remainingBalance,
             safeDailyAmount,
             todayExpensesTotal,
@@ -183,7 +206,18 @@ function updateSummaryCards() {
             incomeFrequency
         );
 
-        safeSpendEl.textContent = formatCurrency(safeAmount);
+        safeSpendEl.textContent = formatCurrency(safeStatus.amount);
+        const statusEl = safeSpendEl.closest('.safe-spend-card')?.querySelector('.safe-spend-status');
+        if (statusEl) {
+            const checkEl = statusEl.querySelector('.safe-spend-check');
+            const textEl = statusEl.querySelector('span:last-child');
+            statusEl.classList.toggle('is-warning', safeStatus.state === 'over-limit');
+            statusEl.classList.toggle('is-reached', safeStatus.state === 'limit-reached');
+            if (checkEl) checkEl.textContent = safeStatus.state === 'over-limit' ? '!' : safeStatus.state === 'limit-reached' ? '=' : '✓';
+            if (textEl) textEl.textContent = safeStatus.state === 'over-limit'
+                ? 'Over your limit'
+                : safeStatus.state === 'limit-reached' ? 'Limit reached' : "You're on track";
+        }
     }
 }
 // --- Recent expenses ---

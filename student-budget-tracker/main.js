@@ -66,7 +66,9 @@ window.firebaseAuth = {
     getGreetingMessage, 
     getUserProfile, 
     updateUserProfile, 
-    isAuthenticated 
+    isAuthenticated,
+    getOnboardingStatus,
+    saveOnboardingProgress
 };
 
 const verificationState = {
@@ -287,7 +289,7 @@ window.switchAuthForm = function(form) {
         const currentHash = window.location.hash || '';
         if (currentHash.includes('recovery') || currentHash.includes('access_token') || currentHash.includes('type=')) {
             window.history.replaceState(null, '', window.location.pathname + window.location.search);
-            console.log('[AUTH] cleared recovery token from URL');
+            window.debugLog?.('[AUTH-DIAG] cleared recovery token from URL');
         }
     }
 };
@@ -445,18 +447,18 @@ function resetAuthButtons() {
  */
 async function handleLogin(e) {
     e.preventDefault();
-    console.log('[LOGIN] form submitted');
+    window.debugLog?.('[AUTH-DIAG] Login form submitted');
     
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
     const submitBtn = document.querySelector('#login-form-element .auth-submit');
     
-    console.log('[LOGIN] email:', email ? 'provided' : 'missing');
+    window.debugLog?.('[AUTH-DIAG] Login email provided:', Boolean(email));
     
     if (!email || !password) {
         errorEl.textContent = 'Please enter your email and password.';
-        console.log('[LOGIN] validation failed: missing fields');
+        window.debugLog?.('[AUTH-DIAG] Login validation failed: missing fields');
         return;
     }
 
@@ -466,9 +468,9 @@ async function handleLogin(e) {
     errorEl.textContent = '';
     
     try {
-        console.log('[LOGIN] calling signIn');
+        window.debugLog?.('[AUTH-DIAG] Calling signIn');
         const result = await signIn(email, password);
-        console.log('[LOGIN] signIn result:', result);
+        window.debugLog?.('[AUTH-DIAG] signIn result:', { success: Boolean(result?.success), error: result?.error || null });
         
         if (result.success) {
             hideVerificationState();
@@ -698,6 +700,7 @@ function persistOnboardingDraft() {
  * Show authentication screen
  */
 function showAuthScreen() {
+    window.debugLog?.('[AUTH-DIAG] Login screen shown');
     const authScreen = document.getElementById('auth-screen');
     const appContainer = document.getElementById('app-container');
     const welcomeOverlay = document.getElementById('welcome-overlay');
@@ -739,7 +742,8 @@ function showAuthScreen() {
  * Show app
  */
 async function showApp() {
-    console.log('[APP] showing app');
+    window.debugLog?.('[DASHBOARD] Dashboard shown');
+    window.debugLog?.('[DASHBOARD] Showing app');
     
     // Verify CONFIG is available
     if (!window.CONFIG) {
@@ -785,7 +789,7 @@ async function showApp() {
     }
 
     if (window.showPage && typeof window.showPage === 'function') {
-        console.log('[ROUTER] current route:', route);
+        window.debugLog?.('[DASHBOARD] Current route:', route);
         await window.showPage(route);
     }
     
@@ -840,19 +844,19 @@ function updateProfileDisplay() {
 async function loadUserData() {
     const user = getCurrentUser();
     if (!user) {
-        console.log('No user logged in');
+        window.debugLog?.('[AUTH-DIAG] No user logged in');
         return;
     }
     
     if (!window.CONFIG) {
-        console.log('CONFIG not available yet');
+        window.debugLog?.('[AUTH-DIAG] CONFIG not available yet');
         return;
     }
     
     syncToFirestore = true;
     
-    console.log('[Monthly System] User authenticated. Using Supabase financial tables.');
-    console.log('[Monthly System] All financial data loads from Supabase: budgets, income, expenses, savings_goals.');
+    window.debugLog?.('[FINANCE] User authenticated. Using Supabase financial tables.');
+    window.debugLog?.('[FINANCE] Financial data loads from budgets, income, expenses, and savings goals.');
     
     // App will load monthly data on-demand in dashboard, budget, and expense pages
     // No preloading of global state
@@ -877,7 +881,7 @@ function setupFirestoreSync() {
                 // }
                 // Otherwise: do NOT sync to old system paths
                 // All financial operations use monthly system directly
-                console.log('firetore sync monthly system is  the source of truth')
+                window.debugLog?.('[FINANCE] Monthly system is the source of truth');
             } catch (error) {
                 console.error('Error during firestore operations:', error);
             }
@@ -920,7 +924,7 @@ async function handleSettingsSubmit(e) {
  * Initialize everything when page loads
  */
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOMContentLoaded - Starting app initialization');
+    window.debugLog?.('[DASHBOARD] DOMContentLoaded - starting app initialization');
     
     // Scripts are already loaded via index.html script tags
     // CONFIG and appState are already defined in app.js
@@ -930,7 +934,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('CRITICAL: CONFIG not initialized');
         return;
     }
-    console.log('CONFIG loaded successfully:', window.CONFIG.APP_NAME);
+    window.debugLog?.('[DASHBOARD] CONFIG loaded successfully:', window.CONFIG.APP_NAME);
     
     // 2. Set up Firestore sync
     setupFirestoreSync();
@@ -939,7 +943,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // This ensures users with recovery tokens see the reset password form
     const { isPasswordRecoverySession } = await import('./auth.js?v=5.0');
     if (isPasswordRecoverySession()) {
-        console.log('[AUTH] Password recovery session detected');
+        window.debugLog?.('[AUTH-DIAG] Password recovery session detected');
         // Show the reset password form directly
         const authScreen = document.getElementById('auth-screen');
         const appContainer = document.getElementById('app-container');
@@ -984,21 +988,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // 3. Set up auth state callback BEFORE initializing auth
     setAuthStateCallback(async (isAuth, user) => {
-        console.log('[AUTH] session detected:', !!isAuth, 'user:', user?.email || 'none');
+        window.debugLog?.('[AUTH-DIAG] session detected:', Boolean(isAuth), 'user exists:', Boolean(user));
         
         // IMPORTANT: Check if we're in a password recovery session
         // If so, don't redirect - stay on the reset password screen
         const { isPasswordRecoverySession } = await import('./auth.js?v=5.0');
         if (isPasswordRecoverySession()) {
-            console.log('[AUTH] Password recovery session detected - staying on reset password screen');
+            window.debugLog?.('[AUTH-DIAG] Password recovery session detected - staying on reset password screen');
             return;
         }
         
         if (isAuth) {
             hideVerificationState();
-            console.log("[AUTH] checking onboarding status for user:", user?.uid || getCurrentUser()?.uid);
+            window.debugLog?.('[AUTH-DIAG] checking onboarding status');
             const onboardingStatus = await getOnboardingStatus(user?.uid || getCurrentUser()?.uid);
-            console.log("[AUTH] onboarding status result:", onboardingStatus);
+            window.debugLog?.('[AUTH-DIAG] onboarding status result:', { success: Boolean(onboardingStatus?.success), completed: Boolean(onboardingStatus?.completed) });
             if (!onboardingStatus.success) {
                 console.warn('[AUTH] onboarding status unavailable; keeping the current authenticated screen');
                 return;
@@ -1006,15 +1010,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             const { completed } = onboardingStatus;
             if (completed) {
-                console.log("[AUTH] onboarding completed, showing app");
+                window.debugLog?.('[AUTH-DIAG] onboarding completed, showing app');
                 showApp();
             } else {
-                console.log("[AUTH] onboarding NOT completed, showing onboarding screen");
+                window.debugLog?.('[AUTH-DIAG] onboarding not completed, showing onboarding screen');
                 populateOnboardingFormDraft();
                 showOnboardingScreen();
             }
         } else {
-            console.log('[AUTH] no session found; showing auth screen');
+            window.debugLog?.('[AUTH-DIAG] no session found; showing auth screen');
             showAuthScreen();
         }
     });
@@ -1120,7 +1124,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (resetPasswordForm) {
         resetPasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            console.log('[RESET] form submitted');
+            window.debugLog?.('[AUTH-DIAG] Password reset form submitted');
             
             const newPassword = document.getElementById('reset-new-password').value;
             const confirmPassword = document.getElementById('reset-confirm-password').value;
@@ -1134,46 +1138,46 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Validation
             if (!newPassword) {
                 errorEl.textContent = 'Please enter a new password.';
-                console.log('[RESET] validation failed: empty password');
+                window.debugLog?.('[AUTH-DIAG] Password reset validation failed: empty password');
                 return;
             }
             if (newPassword.length < 6) {
                 errorEl.textContent = 'Password must be at least 6 characters.';
-                console.log('[RESET] validation failed: password too short');
+                window.debugLog?.('[AUTH-DIAG] Password reset validation failed: password too short');
                 return;
             }
             if (!confirmPassword) {
                 errorEl.textContent = 'Please confirm your password.';
-                console.log('[RESET] validation failed: empty confirm password');
+                window.debugLog?.('[AUTH-DIAG] Password reset validation failed: empty confirmation');
                 return;
             }
             if (newPassword !== confirmPassword) {
                 errorEl.textContent = 'Passwords do not match.';
-                console.log('[RESET] validation failed: passwords do not match');
+                window.debugLog?.('[AUTH-DIAG] Password reset validation failed: passwords do not match');
                 return;
             }
             
-            console.log('[RESET] validation passed');
+            window.debugLog?.('[AUTH-DIAG] Password reset validation passed');
             
             const defaultLabel = 'Update Password';
             submitBtn.dataset.defaultText = defaultLabel;
             setAuthButtonLoading(submitBtn, true, 'Updating...');
             
             try {
-                console.log('[RESET] calling updateUserPassword');
+                window.debugLog?.('[AUTH-DIAG] calling updateUserPassword');
                 const { updateUserPassword } = await import('./auth.js?v=5.0');
                 const result = await updateUserPassword(newPassword);
-                console.log('[RESET] updateUserPassword result:', result);
+                window.debugLog?.('[AUTH-DIAG] updateUserPassword result:', { success: Boolean(result?.success), error: result?.error || null });
                 
                 if (result.success) {
-                    console.log('[RESET] password updated successfully');
+                    window.debugLog?.('[AUTH-DIAG] password updated successfully');
                     successEl.style.display = 'flex';
                     resetPasswordForm.reset();
                     
                     // Clear the recovery token from URL so the app doesn't keep detecting recovery mode
                     if (window.history && window.history.replaceState) {
                         window.history.replaceState(null, '', window.location.pathname + window.location.search);
-                        console.log('[RESET] cleared recovery token from URL');
+                        window.debugLog?.('[AUTH-DIAG] cleared recovery token from URL');
                     }
 
                     const { signOutUser } = await import('./auth.js?v=5.0');
@@ -1184,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         window.switchAuthForm('login');
                     }, 2000);
                 } else {
-                    console.log('[RESET] password update failed:', result.error);
+                    window.debugLog?.('[AUTH-DIAG] password update failed:', result.error);
                     errorEl.textContent = result.error || 'Failed to update password.';
                 }
             } catch (error) {
@@ -1270,14 +1274,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     // 9. Initialize Firebase Auth AFTER everything is set up
-    console.log('Initializing Firebase Auth');
+    window.debugLog?.('[AUTH-DIAG] Initializing auth');
     initAuth();
     
     // 10. Register Service Worker for PWA functionality
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
             .then((registration) => {
-                console.log('[PWA] Service Worker registered successfully', registration);
+                window.debugLog?.('[PWA] Service Worker registered successfully', { scope: registration.scope, active: Boolean(registration.active) });
                 
                 // Check for updates periodically
                 setInterval(() => {
@@ -1285,14 +1289,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }, 60000); // Check every minute
             })
             .catch((error) => {
-                console.log('[PWA] Service Worker registration failed:', error);
+                window.debugWarn?.('[PWA] Service Worker registration failed:', error.message);
                 // Service Worker not available, app will still work
             });
         
         // Listen for messages from Service Worker
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data.type === 'SYNC_EXPENSES') {
-                console.log('[PWA] Syncing expenses:', event.data.message);
+                window.debugLog?.('[PWA] Syncing expenses:', event.data.message);
                 // Optionally trigger data sync when coming back online
             }
         });
@@ -1300,14 +1304,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // 11. Handle online/offline events
     window.addEventListener('online', () => {
-        console.log('[PWA] App is now online - syncing data');
+        window.debugLog?.('[PWA] App is now online - syncing data');
         if (window.showToast) {
             window.showToast('✓ Connected - syncing your data', 'success');
         }
     });
     
     window.addEventListener('offline', () => {
-        console.log('[PWA] App is now offline - using cached data');
+        window.debugLog?.('[PWA] App is now offline - using cached data');
         if (window.showToast) {
             window.showToast('⚠ You are offline - changes will sync when reconnected', 'warning');
         }
