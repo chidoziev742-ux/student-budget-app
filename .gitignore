@@ -1,0 +1,6 @@
+
+# Local backups and generated Firebase files
+*.zip
+.firebase/
+**/.firebase/
+
