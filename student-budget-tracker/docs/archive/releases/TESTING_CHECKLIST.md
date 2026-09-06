@@ -1,27 +1,27 @@
-# Pre-Launch Checklist ✅
+# Pre-Launch Checklist 
 
 ## Files & Configuration
 
-### ✅ Firebase Setup
+###  Firebase Setup
 - [x] firebase-config.js - Contains valid Firebase credentials
 - [x] Auth module (auth.js) - Handles signup, login, logout, profile
 - [x] Firestore sync (firestore-sync.js) - Syncs data bidirectionally
 - [x] Main orchestrator (main.js) - Controls flow and initialization
 
-### ✅ HTML Structure
+###  HTML Structure
 - [x] Auth screen is visible by default (display: flex)
 - [x] App container is hidden by default (display: none)
 - [x] Login and signup forms present
 - [x] Settings page with profile display
 - [x] All form elements have proper IDs
 
-### ✅ CSS Styling
+###  CSS Styling
 - [x] Auth screen fully styled
 - [x] Settings page fully styled
 - [x] Responsive design for mobile
 - [x] Avatar icons for male/female profiles
 
-### ✅ Script Loading Order
+###  Script Loading Order
 - [x] Original scripts load FIRST in main.js
 - [x] CONFIG defined by app.js
 - [x] Auth initializes AFTER scripts are loaded
@@ -82,21 +82,21 @@
 
 ```
 firestore/
-└── users/
-    └── {uid}/
-        ├── profile/
-        │   └── data
-        │       ├── displayName: "John Doe"
-        │       ├── email: "john@example.com"
-        │       ├── gender: "male"
-        │       └── createdAt: timestamp
-        │
-        └── budget/
-            └── data
-                ├── budget: 50000
-                ├── expenses: [...]
-                ├── savingsGoal: 10000
-                └── lastUpdated: timestamp
+ users/
+     {uid}/
+         profile/
+            data
+                displayName: "John Doe"
+                email: "john@example.com"
+                gender: "male"
+                createdAt: timestamp
+        
+         budget/
+             data
+                 budget: 50000
+                 expenses: [...]
+                 savingsGoal: 10000
+                 lastUpdated: timestamp
 ```
 
 ---
@@ -118,14 +118,14 @@ firestore/
 2. Fill form with test data
 3. Click "Create Account"
 4. Should see dashboard
-5. Check Firebase Console → Firestore → users collection
+5. Check Firebase Console -> Firestore -> users collection
 6. Should see new user document
 ```
 
 ### Test 3: Data Sync
 ```
 1. On dashboard, add expense
-2. Open DevTools → Network tab
+2. Open DevTools -> Network tab
 3. Look for Firestore API calls
 4. Should see POST requests to Firestore
 ```
@@ -142,7 +142,7 @@ firestore/
 ### Test 5: Offline Support
 ```
 1. Add expense
-2. Turn off internet (DevTools → Network → Offline)
+2. Turn off internet (DevTools -> Network -> Offline)
 3. Try adding another expense
 4. Should work with localStorage
 5. Turn internet back on
@@ -157,7 +157,7 @@ firestore/
 - [ ] Hard refresh (Ctrl+Shift+R)
 - [ ] Clear browser cache
 - [ ] Check index.html line 13: should have `style="display: flex;"`
-- [ ] Check DevTools → Application → localStorage → look for auth tokens
+- [ ] Check DevTools -> Application -> localStorage -> look for auth tokens
 
 ### Issue: "Cannot read properties of undefined"
 - [ ] Hard refresh
@@ -169,7 +169,7 @@ firestore/
 - [ ] Make sure you're logged in
 - [ ] Check browser console for errors
 - [ ] Verify profile-form element exists in index.html
-- [ ] Check that USER is loaded (DevTools → console → `window.firebaseAuth.getCurrentUser()`)
+- [ ] Check that USER is loaded (DevTools -> console -> `window.firebaseAuth.getCurrentUser()`)
 
 ### Issue: Data not syncing to Firestore
 - [ ] Check Network tab for Firestore API calls
@@ -288,18 +288,18 @@ console.log('Firestore Sync:', window.firestoreSync)
 
 ---
 
-## Success Indicators ✅
+## Success Indicators 
 
 Your app is working correctly when:
-1. ✅ Login screen shows on first load
-2. ✅ Can create account with email/password
-3. ✅ Logged in users see dashboard
-4. ✅ Settings page shows user profile
-5. ✅ Can add expenses and see them on dashboard
-6. ✅ Logout works and shows login screen
-7. ✅ Login again shows same expenses (persisted)
-8. ✅ No red errors in console
-9. ✅ Data appears in Firestore (Firebase Console → Firestore)
+1.  Login screen shows on first load
+2.  Can create account with email/password
+3.  Logged in users see dashboard
+4.  Settings page shows user profile
+5.  Can add expenses and see them on dashboard
+6.  Logout works and shows login screen
+7.  Login again shows same expenses (persisted)
+8.  No red errors in console
+9.  Data appears in Firestore (Firebase Console -> Firestore)
 
 ---
 

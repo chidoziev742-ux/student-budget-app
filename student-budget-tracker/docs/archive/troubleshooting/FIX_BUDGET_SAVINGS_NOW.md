@@ -1,4 +1,4 @@
-# 🚨 URGENT: Fix Missing Budget & Savings Data
+#  URGENT: Fix Missing Budget & Savings Data
 
 ## Problem Summary
 Your app shows:
@@ -20,7 +20,7 @@ Your app shows:
 
 2. **Select Project:** `student-budget-app-20fe9`
 
-3. **Go to:** Firestore Database → Rules tab
+3. **Go to:** Firestore Database -> Rules tab
 
 4. **Delete EVERYTHING** in the rules editor
 
@@ -73,18 +73,18 @@ service cloud.firestore {
 
 1. **Open your app in the browser**
 2. **Press F12** (open Developer Tools)
-3. **Hold Shift + Click the Refresh button** → "Empty cache and hard refresh"
-4. **OR:** Go to Settings → Clear browsing data → All time → Clear
+3. **Hold Shift + Click the Refresh button** -> "Empty cache and hard refresh"
+4. **OR:** Go to Settings -> Clear browsing data -> All time -> Clear
 
 ---
 
 ## STEP 3: Test the Fix
 
-1. **Sign out** of the app (Settings → Sign Out)
+1. **Sign out** of the app (Settings -> Sign Out)
 2. **Close the browser tab completely**
 3. **Reopen the app** in a new tab
 4. **Sign in** with your account
-5. **Check the browser console** (F12 → Console tab):
+5. **Check the browser console** (F12 -> Console tab):
 
 **Look for these messages:**
 ```
@@ -112,18 +112,18 @@ Budget document: NOT FOUND (if you already set a budget)
 ## STEP 4: If Still Not Working
 
 ### Check 1: Did the rules publish successfully?
-- Go back to Firebase Console → Firestore Rules
+- Go back to Firebase Console -> Firestore Rules
 - Should say "Last published: just now" or recent timestamp
 - If not, click Publish again
 
 ### Check 2: Do you have data in Firestore?
-- Firebase Console → Firestore Data
+- Firebase Console -> Firestore Data
 - Click on `users` collection
 - Look for your user ID
 - Inside should be: `budget` folder, `expenses` folder, `profile` folder
 
 ### Check 3: Check the error in console
-- F12 → Console tab
+- F12 -> Console tab
 - Look for any error messages
 - Share the exact error message
 
@@ -147,25 +147,25 @@ After fix works, your Firestore should have this structure:
 
 ```
 users/
-└── YOUR-USER-ID/
-    ├── profile/
-    │   └── data
-    │       ├── displayName: "Your Name"
-    │       ├── email: "your@email.com"
-    │       └── gender: "male" | "female" | "other"
-    │
-    ├── budget/
-    │   └── data
-    │       ├── income: 50000 (← your budget amount)
-    │       ├── savingsGoal: 10000 (← your savings goal)
-    │       ├── balance: 50000
-    │       ├── createdAt: "2026-01-31T..."
-    │       └── updatedAt: "2026-01-31T..."
-    │
-    └── expenses/
-        ├── EXPENSE-ID-1 { amount: 5000, category: "food", date: "2026-01-31", ... }
-        ├── EXPENSE-ID-2 { amount: 1500, category: "transport", ... }
-        └── ... more expenses
+ YOUR-USER-ID/
+     profile/
+        data
+            displayName: "Your Name"
+            email: "your@email.com"
+            gender: "male" | "female" | "other"
+    
+     budget/
+        data
+            income: 50000 (-> your budget amount)
+            savingsGoal: 10000 (-> your savings goal)
+            balance: 50000
+            createdAt: "2026-01-31T..."
+            updatedAt: "2026-01-31T..."
+    
+     expenses/
+         EXPENSE-ID-1 { amount: 5000, category: "food", date: "2026-01-31", ... }
+         EXPENSE-ID-2 { amount: 1500, category: "transport", ... }
+         ... more expenses
 ```
 
 ---

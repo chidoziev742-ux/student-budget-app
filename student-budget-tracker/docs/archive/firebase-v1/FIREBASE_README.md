@@ -63,22 +63,22 @@ This version of the Student Budget Tracker has been completely updated with Fire
 ## How It Works
 
 ### Authentication Flow
-1. User opens app → sees login/signup screen
-2. User signs up → creates Firestore profile and budget documents
-3. User logs in → loads their data from Firestore
+1. User opens app -> sees login/signup screen
+2. User signs up -> creates Firestore profile and budget documents
+3. User logs in -> loads their data from Firestore
 4. App saves all changes to Firestore automatically
-5. User logs out → clears session, returns to login screen
+5. User logs out -> clears session, returns to login screen
 
 ### Data Sync Flow
-1. User adds expense/budget → saves to localStorage immediately
-2. If logged in → also syncs to Firestore
-3. If offline → works with localStorage until connection returns
-4. When synced successfully → data is available on all devices
+1. User adds expense/budget -> saves to localStorage immediately
+2. If logged in -> also syncs to Firestore
+3. If offline -> works with localStorage until connection returns
+4. When synced successfully -> data is available on all devices
 
 ### Migration Flow
 1. Existing localStorage data detected
-2. On first login → migrated to Firestore automatically
-3. After migration → LocalStorage is no longer used for that user
+2. On first login -> migrated to Firestore automatically
+3. After migration -> LocalStorage is no longer used for that user
 4. Data stays synced across devices
 
 ## Features Preserved
@@ -127,13 +127,13 @@ See `SETUP_FIREBASE.md` for more troubleshooting tips.
 
 ```
 index.html (Auth UI + App UI)
-    ↓
+    ->
 main.js (Entry point, loads all modules)
-    ↓
-├── firebase-config.js (Firebase SDK setup)
-├── auth.js (Authentication logic)
-├── firestore-sync.js (Database operations)
-└── app.js (Original app logic + Firestore sync)
+    ->
+ firebase-config.js (Firebase SDK setup)
+ auth.js (Authentication logic)
+ firestore-sync.js (Database operations)
+ app.js (Original app logic + Firestore sync)
 ```
 
 ## Future Enhancements

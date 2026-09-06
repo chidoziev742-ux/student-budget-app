@@ -18,7 +18,7 @@
 ### 3. Data Syncing
 - Automatic save to Firestore when data changes
 - Dual-layer saving: localStorage (immediate) + Firestore (async)
-- localStorage → Firestore migration on first login
+- localStorage -> Firestore migration on first login
 - Cross-device data sync
 - Offline support with fallback to localStorage
 
@@ -102,22 +102,22 @@
 Firestore Collection: users
 
 users/{uid}/
-├── profile/data
-│   ├── displayName: string
-│   ├── email: string
-│   ├── gender: "male" | "female"
-│   ├── photoType: "icon"
-│   ├── createdAt: timestamp
-│   └── updatedAt: timestamp
-│
-└── budget/data
-    ├── income: number
-    ├── savingsGoal: number
-    ├── balance: number
-    ├── expenses: array
-    │   └── {id, title, amount, category, date, reason, addedDate}
-    ├── createdAt: timestamp
-    └── updatedAt: timestamp
+ profile/data
+    displayName: string
+    email: string
+    gender: "male" | "female"
+    photoType: "icon"
+    createdAt: timestamp
+    updatedAt: timestamp
+
+ budget/data
+     income: number
+     savingsGoal: number
+     balance: number
+     expenses: array
+        {id, title, amount, category, date, reason, addedDate}
+     createdAt: timestamp
+     updatedAt: timestamp
 ```
 
 ## Security Rules (Firestore)

@@ -9,12 +9,12 @@ The expense storage has been refactored from **arrays within documents** to **in
 ### Before (Array in Document - Unreliable)
 ```
 users/{uid}/budget/data
-├── income: 50000
-├── expenses: [        ← Array (converted to numeric keys by Firestore)
-│   { id, amount, category, date, ... },
-│   { id, amount, category, date, ... }
-├── savingsGoal: 10000
-└── updatedAt: timestamp
+ income: 50000
+ expenses: [        -> Array (converted to numeric keys by Firestore)
+   { id, amount, category, date, ... },
+   { id, amount, category, date, ... }
+ savingsGoal: 10000
+ updatedAt: timestamp
 ```
 
 **Problems:**
@@ -26,30 +26,30 @@ users/{uid}/budget/data
 ### After (Subcollection - Reliable)
 ```
 users/{uid}/
-├── budget/
-│   └── data (document)
-│       ├── income: 50000
-│       ├── savingsGoal: 10000
-│       ├── balance: 30000
-│       └── updatedAt: timestamp
-│
-└── expenses/ (subcollection)
-    ├── expense_doc_1 (Firestore auto-generated ID)
-    │   ├── amount: 500
-    │   ├── category: "food"
-    │   ├── date: "2025-01-26"
-    │   ├── reason: "Lunch"
-    │   └── addedDate: timestamp
-    │
-    ├── expense_doc_2
-    │   ├── amount: 1500
-    │   ├── category: "transport"
-    │   ├── date: "2025-01-26"
-    │   ├── reason: "Bus fare"
-    │   └── addedDate: timestamp
-    │
-    └── expense_doc_3
-        └── ...
+ budget/
+    data (document)
+        income: 50000
+        savingsGoal: 10000
+        balance: 30000
+        updatedAt: timestamp
+
+ expenses/ (subcollection)
+     expense_doc_1 (Firestore auto-generated ID)
+        amount: 500
+        category: "food"
+        date: "2025-01-26"
+        reason: "Lunch"
+        addedDate: timestamp
+    
+     expense_doc_2
+        amount: 1500
+        category: "transport"
+        date: "2025-01-26"
+        reason: "Bus fare"
+        addedDate: timestamp
+    
+     expense_doc_3
+         ...
 ```
 
 **Benefits:**
@@ -219,57 +219,57 @@ Wrapper for onclick handlers to properly handle async deletion.
 ### Adding an Expense
 ```
 User Form Submit
-    ↓
+    ->
 handleExpenseSubmit()
-    ↓
+    ->
 addExpense(expenseData)
-    ├─ Call: addExpenseToFirestore(uid, expense)
-    │   └─ Firestore: users/{uid}/expenses/{newId} created
-    ├─ Update: appState.expenses (add with returned ID)
-    ├─ Call: updateBalanceInFirestore(uid, appState)
-    │   └─ Firestore: users/{uid}/budget/data.balance updated
-    └─ Return: { success: true, id: "..." }
-    ↓
+     Call: addExpenseToFirestore(uid, expense)
+        Firestore: users/{uid}/expenses/{newId} created
+     Update: appState.expenses (add with returned ID)
+     Call: updateBalanceInFirestore(uid, appState)
+        Firestore: users/{uid}/budget/data.balance updated
+     Return: { success: true, id: "..." }
+    ->
 Form cleared
-    ↓
+    ->
 UI updated: dashboard, history, savings
-    ↓
+    ->
 Success toast shown
 ```
 
 ### Deleting an Expense
 ```
 Delete Button Clicked
-    ↓
+    ->
 window.deleteExpenseFromUI(expenseId)
-    ↓
+    ->
 deleteExpense(expenseId)
-    ├─ Call: deleteExpenseFromFirestore(uid, expenseId)
-    │   └─ Firestore: users/{uid}/expenses/{expenseId} deleted
-    ├─ Update: appState.expenses (filter out deleted ID)
-    ├─ Call: updateBalanceInFirestore(uid, appState)
-    │   └─ Firestore: users/{uid}/budget/data.balance updated
-    └─ Return: { success: true }
-    ↓
+     Call: deleteExpenseFromFirestore(uid, expenseId)
+        Firestore: users/{uid}/expenses/{expenseId} deleted
+     Update: appState.expenses (filter out deleted ID)
+     Call: updateBalanceInFirestore(uid, appState)
+        Firestore: users/{uid}/budget/data.balance updated
+     Return: { success: true }
+    ->
 UI updated: dashboard, history, savings
-    ↓
+    ->
 Success toast shown
 ```
 
 ### Editing an Expense
 ```
 Edit Form Submit
-    ↓
+    ->
 editExpense(expenseId, updates)
-    ├─ Call: updateExpenseInFirestore(uid, expenseId, updates)
-    │   └─ Firestore: users/{uid}/expenses/{expenseId} updated
-    ├─ Update: appState.expenses (merge changes)
-    ├─ Call: updateBalanceInFirestore(uid, appState)
-    │   └─ Firestore: users/{uid}/budget/data.balance updated
-    └─ Return: { success: true }
-    ↓
+     Call: updateExpenseInFirestore(uid, expenseId, updates)
+        Firestore: users/{uid}/expenses/{expenseId} updated
+     Update: appState.expenses (merge changes)
+     Call: updateBalanceInFirestore(uid, appState)
+        Firestore: users/{uid}/budget/data.balance updated
+     Return: { success: true }
+    ->
 UI updated
-    ↓
+    ->
 Success toast shown
 ```
 
@@ -300,40 +300,40 @@ service cloud.firestore {
 - [ ] Click "Add Expense"
 - [ ] Success toast appears
 - [ ] Expense appears in dashboard/history
-- [ ] Check Firestore Console → users/{uid}/expenses → new document exists
+- [ ] Check Firestore Console -> users/{uid}/expenses -> new document exists
 - [ ] Balance updates automatically
-- [ ] Refresh page → expense still there
+- [ ] Refresh page -> expense still there
 
 ### Edit Expense
 - [ ] Open history page
 - [ ] Click edit on an expense
 - [ ] Change amount/reason
 - [ ] Save
-- [ ] Check Firestore Console → document updated
+- [ ] Check Firestore Console -> document updated
 - [ ] Balance recalculates
-- [ ] Refresh page → changes persisted
+- [ ] Refresh page -> changes persisted
 
 ### Delete Expense
 - [ ] Click delete button
 - [ ] Success toast appears
 - [ ] Expense disappears from list
-- [ ] Check Firestore Console → document deleted
+- [ ] Check Firestore Console -> document deleted
 - [ ] Balance increases
-- [ ] Refresh page → expense stays deleted
+- [ ] Refresh page -> expense stays deleted
 
-### ✅ Multiple Operations
+###  Multiple Operations
 - [ ] Add multiple expenses rapidly
 - [ ] All should be created without data loss
 - [ ] Delete multiple expenses
 - [ ] All should delete independently
 - [ ] Balance should be accurate
 
-### ✅ Offline Support
-- [ ] Add expense while online → synced to Firestore
+###  Offline Support
+- [ ] Add expense while online -> synced to Firestore
 - [ ] Turn off internet
-- [ ] Add expense offline → saved to localStorage
-- [ ] Turn internet back on → auto-syncs to Firestore
-- [ ] Check Firestore → both expenses there
+- [ ] Add expense offline -> saved to localStorage
+- [ ] Turn internet back on -> auto-syncs to Firestore
+- [ ] Check Firestore -> both expenses there
 
 ## Migration from Array Structure
 
@@ -397,7 +397,7 @@ if (result.success) {
 **Check:**
 1. Is `updateBalanceInFirestore()` being called?
 2. Is the calculation correct: `budget - total_expenses`?
-3. Check Firestore document → balance field
+3. Check Firestore document -> balance field
 
 ### Issue: "Delete doesn't work"
 **Check:**

@@ -122,29 +122,29 @@ appState = {
 ## Saving Data Flow
 
 1. **User Action** (add expense, set budget, etc.)
-   ↓
+   ->
 2. **Update appState** in memory
-   ↓
+   ->
 3. **Call saveAppData()**
-   ↓
+   ->
 4. **Save to localStorage** (immediate)
-   ↓
+   ->
 5. **If authenticated**, **save to Firestore** (async)
 
 ## Loading Data Flow
 
-1. **App starts** → `main.js` loads
-   ↓
-2. **Firebase Auth initializes** → checks login status
-   ↓
-3. **If logged in** → `loadUserData()` called
-   ↓
+1. **App starts** -> `main.js` loads
+   ->
+2. **Firebase Auth initializes** -> checks login status
+   ->
+3. **If logged in** -> `loadUserData()` called
+   ->
 4. **Load from Firestore** (if has data)
-   ↓
+   ->
 5. **Or migrate from localStorage** (first time)
-   ↓
+   ->
 6. **Populate appState** with loaded data
-   ↓
+   ->
 7. **Show app with loaded data**
 
 ## Available Globals

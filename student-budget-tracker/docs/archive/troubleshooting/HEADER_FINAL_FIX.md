@@ -17,7 +17,7 @@ The **Service Worker** is caching old CSS files. Even though we updated the CSS,
 - URL changed to `styles.css?v=2.1`
 - Prevents browser from using old cached CSS
 
-## 📋 FOLLOW THESE STEPS EXACTLY
+##  FOLLOW THESE STEPS EXACTLY
 
 ### Step 1: Close Everything (IMPORTANT)
 1. Close **ALL browser tabs** completely
@@ -30,9 +30,9 @@ The **Service Worker** is caching old CSS files. Even though we updated the CSS,
 2. Press `Ctrl + Shift + Delete` to open "Clear Browsing Data"
 3. Make sure time range is **"All time"**
 4. Check ALL these boxes:
-   - ☑ Cookies and other site data
-   - ☑ Cached images and files
-   - ☑ Hosted app data (if available)
+   -  Cookies and other site data
+   -  Cached images and files
+   -  Hosted app data (if available)
 5. Click **"Clear data"**
 
 ### Step 3: Unregister Service Worker Manually (CRITICAL)
@@ -71,7 +71,7 @@ The **Service Worker** is caching old CSS files. Even though we updated the CSS,
 
 **Header Layout:**
 ```
-[⚙️]  Student Budget Tracker  [April 2023]
+[️]  Student Budget Tracker  [April 2023]
       Manage your finances...
       (greeting message)
 ```
@@ -87,7 +87,7 @@ The **Service Worker** is caching old CSS files. Even though we updated the CSS,
 ### Still showing old header after step 5?
 
 **Try this:**
-1. Go to `F12` → Application → Storage
+1. Go to `F12` -> Application -> Storage
 2. Click **"Clear site data"** button (if available)
 3. This clears EVERYTHING at once
 4. Close tab completely
@@ -97,7 +97,7 @@ The **Service Worker** is caching old CSS files. Even though we updated the CSS,
 ### Still not working?
 
 **Extreme option - Browser Reset:**
-1. Go to Settings → Clear browsing data → ALL TIME
+1. Go to Settings -> Clear browsing data -> ALL TIME
 2. Check: Cookies, Cache, Site settings, Hosted data
 3. Click Clear
 4. Restart browser completely
@@ -130,10 +130,10 @@ Should show your app scope is registered.
 ## If Everything Fails
 
 Last resort - contact support with this info:
-- Browser version: (check Help → About)
+- Browser version: (check Help -> About)
 - OS: Windows
 - Screenshot of header showing wrong layout
-- Check console output (`F12` → Console) and share any error messages
+- Check console output (`F12` -> Console) and share any error messages
 
 ---
 

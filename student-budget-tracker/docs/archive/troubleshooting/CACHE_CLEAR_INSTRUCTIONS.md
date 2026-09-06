@@ -51,7 +51,7 @@ Your app has been fixed, but your browser may still be serving **old cached vers
 
 ## Step 6: Verify the Fix
 
-Open the **Browser Console** (F12 → Console tab) and look for:
+Open the **Browser Console** (F12 -> Console tab) and look for:
 
 **Expected messages:**
 ```
@@ -71,7 +71,7 @@ app.js:1 Uncaught SyntaxError: Identifier 'savingsStyles' has already been decla
 
 If errors persist after all steps above:
 
-1. **Open DevTools → Application → Manifest**
+1. **Open DevTools -> Application -> Manifest**
    - Look for scope and start_url
    - Make sure they match your domain
 
@@ -101,8 +101,8 @@ Once cache is cleared:
 If nothing above works:
 
 **Chrome/Edge:**
-1. Settings → Privacy and security → Clear browsing data
-2. Advanced tab → select "All time"
+1. Settings -> Privacy and security -> Clear browsing data
+2. Advanced tab -> select "All time"
 3. Check EVERYTHING
 4. Clear data
 5. **Close the browser COMPLETELY**
@@ -111,11 +111,11 @@ If nothing above works:
 8. Find your domain and click "Unregister"
 
 **Firefox:**
-1. Menu → Settings → Privacy & Security
+1. Menu -> Settings -> Privacy & Security
 2. Scroll to "Cookies and Site Data"
 3. Click "Clear Data..."
 4. Check both options, click "Clear"
-5. Go to about:debugging → This Firefox → Service Workers
+5. Go to about:debugging -> This Firefox -> Service Workers
 6. Unregister any workers for your domain
 7. Close Firefox completely and restart
 

@@ -41,7 +41,7 @@ You have two options:
 #### Option 2: Manual Update via Firebase Console
 1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Select your project: **student-budget-app-20fe9**
-3. Go to **Firestore Database** → **Rules** tab
+3. Go to **Firestore Database** -> **Rules** tab
 4. Copy and paste the following rules:
 
 ```

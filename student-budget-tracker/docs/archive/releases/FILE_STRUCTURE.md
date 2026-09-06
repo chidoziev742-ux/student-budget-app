@@ -4,29 +4,29 @@
 
 ```
 student-budget-tracker/
-├── index.html                          # Main HTML file (updated with auth UI)
-├── styles.css                          # CSS styling (updated with auth/settings styles)
-├── app.js                              # Main app logic (updated with Firestore sync)
-├── dashboard.js                        # Dashboard calculations and display
-├── budget.js                           # Budget management page
-├── expense.js                          # Expense form and handling
-├── history.js                          # Expense history and filtering
-├── savings.js                          # Savings goal tracker
-├── notifications.js                    # Toast notification system
-│
-├── firebase-config.js                  # ⭐ NEW - Firebase SDK setup
-├── auth.js                             # ⭐ NEW - Authentication logic
-├── firestore-sync.js                   # ⭐ NEW - Firestore database operations
-├── main.js                             # ⭐ NEW - App entry point
-│
-├── SETUP_FIREBASE.md                   # ⭐ NEW - Firebase setup guide
-├── FIREBASE_README.md                  # ⭐ NEW - Features and architecture
-├── FIREBASE_REFERENCE.md               # ⭐ NEW - API documentation
-├── IMPLEMENTATION_SUMMARY.md           # ⭐ NEW - What was implemented
-├── FILE_STRUCTURE.md                   # ⭐ NEW - This file
-│
-├── README.md                           # Original project README (if exists)
-└── .gitignore                          # (Optional) Git ignore file
+ index.html                          # Main HTML file (updated with auth UI)
+ styles.css                          # CSS styling (updated with auth/settings styles)
+ app.js                              # Main app logic (updated with Firestore sync)
+ dashboard.js                        # Dashboard calculations and display
+ budget.js                           # Budget management page
+ expense.js                          # Expense form and handling
+ history.js                          # Expense history and filtering
+ savings.js                          # Savings goal tracker
+ notifications.js                    # Toast notification system
+
+ firebase-config.js                  #  NEW - Firebase SDK setup
+ auth.js                             #  NEW - Authentication logic
+ firestore-sync.js                   #  NEW - Firestore database operations
+ main.js                             #  NEW - App entry point
+
+ SETUP_FIREBASE.md                   #  NEW - Firebase setup guide
+ FIREBASE_README.md                  #  NEW - Features and architecture
+ FIREBASE_REFERENCE.md               #  NEW - API documentation
+ IMPLEMENTATION_SUMMARY.md           #  NEW - What was implemented
+ FILE_STRUCTURE.md                   #  NEW - This file
+
+ README.md                           # Original project README (if exists)
+ .gitignore                          # (Optional) Git ignore file
 ```
 
 ## File Descriptions
@@ -88,13 +88,13 @@ student-budget-tracker/
   - Notification panel UI
   - Browser notification support
 
-### ⭐ Firebase Integration (NEW)
+###  Firebase Integration (NEW)
 
 - **firebase-config.js** (58 lines)
   - Firebase SDK imports
   - Firebase app initialization
   - Auth and Firestore exports
-  - **⚠️ ACTION REQUIRED**: Add your Firebase config here!
+  - **️ ACTION REQUIRED**: Add your Firebase config here!
   
   ```javascript
   // Replace this with your actual Firebase config:
@@ -136,7 +136,7 @@ student-budget-tracker/
   - Firestore sync setup
   - Original script loader
 
-### 📚 Documentation (NEW)
+###  Documentation (NEW)
 
 - **SETUP_FIREBASE.md** (103 lines)
   - Step-by-step Firebase setup
@@ -239,21 +239,21 @@ student-budget-tracker/
 
 ```
 main.js
-  ├── firebase-config.js (ES module)
-  │   └── Firebase SDK (CDN)
-  ├── auth.js (ES module)
-  │   └── firebase-config.js
-  └── firestore-sync.js (ES module)
-      └── firebase-config.js
+   firebase-config.js (ES module)
+      Firebase SDK (CDN)
+   auth.js (ES module)
+      firebase-config.js
+   firestore-sync.js (ES module)
+       firebase-config.js
 
 app.js (global script)
-  ├── dashboard.js (global script)
-  ├── budget.js (global script)
-  ├── expense.js (global script)
-  ├── history.js (global script)
-  ├── savings.js (global script)
-  ├── notifications.js (global script)
-  └── (All use global appState and CONFIG)
+   dashboard.js (global script)
+   budget.js (global script)
+   expense.js (global script)
+   history.js (global script)
+   savings.js (global script)
+   notifications.js (global script)
+   (All use global appState and CONFIG)
 ```
 
 ## Environment Variables

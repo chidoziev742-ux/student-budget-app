@@ -14,7 +14,7 @@
 
 ## Step 2: Enable Authentication (1 minute)
 
-1. Go to **Build** → **Authentication**
+1. Go to **Build** -> **Authentication**
 2. Click **Get Started**
 3. Select **Email/Password**
 4. Click the toggle to **Enable** it
@@ -22,7 +22,7 @@
 
 ## Step 3: Enable Firestore (1 minute)
 
-1. Go to **Build** → **Firestore Database**
+1. Go to **Build** -> **Firestore Database**
 2. Click **Create Database**
 3. Select **Test Mode** (for development)
 4. Choose your region (closest to you)
@@ -65,11 +65,11 @@
 
 Your app now has cloud sync! Try these:
 
-1. **Add an expense** → See it save to Firestore
-2. **Set a budget** → Data syncs to cloud
-3. **Open on another device** → Log in, see same data
-4. **Settings page** → Edit profile, see avatar change
-5. **Log out** → Data still safe in cloud
+1. **Add an expense** -> See it save to Firestore
+2. **Set a budget** -> Data syncs to cloud
+3. **Open on another device** -> Log in, see same data
+4. **Settings page** -> Edit profile, see avatar change
+5. **Log out** -> Data still safe in cloud
 
 ## Troubleshooting
 
@@ -80,7 +80,7 @@ Your app now has cloud sync! Try these:
 
 **"Data not syncing"?**
 - Make sure you're logged in
-- Check Firebase Console → Firestore to see collections
+- Check Firebase Console -> Firestore to see collections
 - If you see `/users/{uid}/` folders, it's working!
 
 **Can't see Firestore data?**
@@ -121,7 +121,7 @@ window.saveAppData();  // Saves to Firestore!
 ```
 
 ### Important Files
-- `firebase-config.js` - ⚠️ Update with your Firebase config
+- `firebase-config.js` - ️ Update with your Firebase config
 - `main.js` - App entry point (loads everything)
 - `auth.js` - Authentication logic
 - `firestore-sync.js` - Database sync
@@ -133,30 +133,30 @@ window.saveAppData();  // Saves to Firestore!
 
 ```
 User Opens App
-    ↓
+    ->
 main.js loads (ES module)
-    ↓
+    ->
 Firebase config loaded
-    ↓
+    ->
 Auth state checked
-    ↓
+    ->
 User logged in? 
-    ├─ YES → Load Firestore data → Show app
-    └─ NO → Show login screen
+     YES -> Load Firestore data -> Show app
+     NO -> Show login screen
 ```
 
 ## Data Flow
 
 ```
 User Action (add expense)
-    ↓
+    ->
 Update appState in memory
-    ↓
+    ->
 Call saveAppData()
-    ↓
-├─ Save to localStorage (instant)
-└─ Save to Firestore (if logged in)
-    ↓
+    ->
+ Save to localStorage (instant)
+ Save to Firestore (if logged in)
+    ->
 Data syncs to all devices
 ```
 

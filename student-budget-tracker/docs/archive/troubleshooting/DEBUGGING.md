@@ -49,7 +49,7 @@
 4. Pass if greeting appears
 
 ### Test 4: Settings Page Works
-1. Click navigation → Settings (or gear icon)
+1. Click navigation -> Settings (or gear icon)
 2. Should show:
    - Your profile info (name, email, gender)
    - Avatar icon (male/female)
@@ -181,7 +181,7 @@ console.log(window.firebaseAuth)
    - Check for CORS errors
 
 4. **Check localStorage**
-   - Open DevTools → Application → localStorage
+   - Open DevTools -> Application -> localStorage
    - Look for StudentBudgetTracker entries
    - Should have budget, expenses, savingsGoal
 
@@ -196,20 +196,20 @@ console.log(window.firebaseAuth)
 
 ```
 1. Page loads
-   ↓
+   ->
 2. See login screen (by default)
-   ↓
-3. Sign up → Creates Firestore account
-   ↓
+   ->
+3. Sign up -> Creates Firestore account
+   ->
 4. See dashboard with greeting
-   ↓
+   ->
 5. Can add expenses, set budget, etc.
-   ↓
+   ->
 6. All data syncs to Firestore
-   ↓
-7. Logout → See login screen again
-   ↓
-8. Login → See all old data (from Firestore)
+   ->
+7. Logout -> See login screen again
+   ->
+8. Login -> See all old data (from Firestore)
 ```
 
 ---

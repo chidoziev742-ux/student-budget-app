@@ -25,7 +25,7 @@ Your Student Budget Tracker now has full Firebase authentication and Firestore i
 - Cross-device data sync
 
 ### Data Management
-- LocalStorage → Firestore migration
+- LocalStorage -> Firestore migration
 - Dual-layer saving (local + cloud)
 - Offline support with fallback
 - Export/import functionality
@@ -118,7 +118,7 @@ Your Student Budget Tracker now has full Firebase authentication and Firestore i
 
 ---
 
-## 📚 Documentation Guide
+##  Documentation Guide
 
 ### For Quick Start
 - Read: [GETTING_STARTED.md](GETTING_STARTED.md)
@@ -200,32 +200,32 @@ Your app uses minimal quota:
 
 ### Authentication
 ```
-Login/Signup → Firebase Auth → User account created → Firestore docs auto-generated
+Login/Signup -> Firebase Auth -> User account created -> Firestore docs auto-generated
 ```
 
 ### Data Sync
 ```
-User adds expense → localStorage saved → Firestore synced → Available on all devices
+User adds expense -> localStorage saved -> Firestore synced -> Available on all devices
 ```
 
 ### Cross-Device
 ```
-Log in on phone → Log in on laptop → See same data everywhere
+Log in on phone -> Log in on laptop -> See same data everywhere
 ```
 
 ### Offline
 ```
-Offline → Use localStorage → Go online → Auto-syncs to Firestore
+Offline -> Use localStorage -> Go online -> Auto-syncs to Firestore
 ```
 
 ### Migration
 ```
-Old localStorage data → First login → Auto-migrated to Firestore → No data loss
+Old localStorage data -> First login -> Auto-migrated to Firestore -> No data loss
 ```
 
 ---
 
-## ✨ User Experience
+##  User Experience
 
 ### First Time User
 1. See login/signup screen
@@ -259,7 +259,7 @@ Old localStorage data → First login → Auto-migrated to Firestore → No data
 
 ---
 
-## 📊 Statistics
+##  Statistics
 
 | Metric | Value |
 |--------|-------|
@@ -304,7 +304,7 @@ Old localStorage data → First login → Auto-migrated to Firestore → No data
 
 ---
 
-## ✅ Testing Checklist
+##  Testing Checklist
 
 Before going live, verify:
 - [ ] Firebase config added to firebase-config.js
@@ -320,7 +320,7 @@ Before going live, verify:
 
 ---
 
-## 🚢 Deployment Options
+##  Deployment Options
 
 ### Option 1: Firebase Hosting (Recommended)
 ```bash
@@ -400,11 +400,11 @@ git push
 
 ## Need Help?
 
-1. **Setup questions** → [SETUP_FIREBASE.md](SETUP_FIREBASE.md)
-2. **How to use** → [FIREBASE_README.md](FIREBASE_README.md)
-3. **Code questions** → [FIREBASE_REFERENCE.md](FIREBASE_REFERENCE.md)
-4. **Troubleshooting** → [SETUP_FIREBASE.md#troubleshooting](SETUP_FIREBASE.md)
-5. **Everything overview** → [INDEX.md](INDEX.md)
+1. **Setup questions** -> [SETUP_FIREBASE.md](SETUP_FIREBASE.md)
+2. **How to use** -> [FIREBASE_README.md](FIREBASE_README.md)
+3. **Code questions** -> [FIREBASE_REFERENCE.md](FIREBASE_REFERENCE.md)
+4. **Troubleshooting** -> [SETUP_FIREBASE.md#troubleshooting](SETUP_FIREBASE.md)
+5. **Everything overview** -> [INDEX.md](INDEX.md)
 
 ---
 

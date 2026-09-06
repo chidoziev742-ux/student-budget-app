@@ -13,14 +13,14 @@ This Student Budget Tracker app now uses Firebase for authentication and data st
 
 ### 2. Set Up Authentication
 
-1. In Firebase Console, go to **Build** → **Authentication**
+1. In Firebase Console, go to **Build** -> **Authentication**
 2. Click **Get Started**
 3. Select **Email/Password** as the sign-in method
 4. Enable it and save
 
 ### 3. Set Up Firestore Database
 
-1. Go to **Build** → **Firestore Database**
+1. Go to **Build** -> **Firestore Database**
 2. Click **Create Database**
 3. Start in **Test Mode** (for development)
 4. Choose your preferred location (closest to you)
@@ -92,13 +92,13 @@ users/{uid}/
 
 ## Features
 
-✅ **Authentication**: Email/Password signup and login
-✅ **Cross-Device Sync**: All data syncs to Firestore
-✅ **Auto-Save**: Data automatically saves to cloud when updated
-✅ **Offline Support**: Works offline, syncs when back online
-✅ **LocalStorage Fallback**: Falls back to localStorage if not logged in
-✅ **Settings Page**: Edit profile and logout
-✅ **Privacy**: Each user only sees their own data
+ **Authentication**: Email/Password signup and login
+ **Cross-Device Sync**: All data syncs to Firestore
+ **Auto-Save**: Data automatically saves to cloud when updated
+ **Offline Support**: Works offline, syncs when back online
+ **LocalStorage Fallback**: Falls back to localStorage if not logged in
+ **Settings Page**: Edit profile and logout
+ **Privacy**: Each user only sees their own data
 
 ## Troubleshooting
 

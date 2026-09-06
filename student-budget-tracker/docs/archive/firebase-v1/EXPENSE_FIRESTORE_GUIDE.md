@@ -8,26 +8,26 @@ The expense management system has been completely rewritten to properly handle F
 ### 1. **Firestore Data Structure**
 ```
 users/{uid}/budget/data (document)
-├── income: 50000
-├── expenses: [                    ← Array of all expenses
-│   {
-│     id: "1234567890",
-│     amount: 500,
-│     category: "food",
-│     date: "2025-01-26",
-│     reason: "Lunch",
-│     addedDate: "2025-01-26T10:30:00Z"
-│   },
-│   {
-│     id: "1234567891",
-│     amount: 1500,
-│     category: "transport",
-│     date: "2025-01-26",
-│     reason: "Bus fare",
-│     addedDate: "2025-01-26T10:35:00Z"
-│   }
-├── savingsGoal: 10000
-└── updatedAt: "2025-01-26T10:35:00Z"
+ income: 50000
+ expenses: [                    -> Array of all expenses
+   {
+     id: "1234567890",
+     amount: 500,
+     category: "food",
+     date: "2025-01-26",
+     reason: "Lunch",
+     addedDate: "2025-01-26T10:30:00Z"
+   },
+   {
+     id: "1234567891",
+     amount: 1500,
+     category: "transport",
+     date: "2025-01-26",
+     reason: "Bus fare",
+     addedDate: "2025-01-26T10:35:00Z"
+   }
+ savingsGoal: 10000
+ updatedAt: "2025-01-26T10:35:00Z"
 ```
 
 ### 2. **How It Works Now**
@@ -45,9 +45,9 @@ const expense = {
 };
 
 // 2. addExpense() function handles the flow:
-// ├─ Add expense to local appState.expenses array
-// ├─ Call saveExpensesToFirestore(uid, appState.expenses)
-// └─ Update UI after Firestore responds
+//  Add expense to local appState.expenses array
+//  Call saveExpensesToFirestore(uid, appState.expenses)
+//  Update UI after Firestore responds
 
 await addExpense(expense);
 // Result: Firestore document now contains the new expense in the array
@@ -57,9 +57,9 @@ await addExpense(expense);
 ```javascript
 // 1. Delete button calls deleteExpenseFromUI(expenseId)
 // 2. deleteExpense() function handles the flow:
-// ├─ Find and remove expense from appState.expenses array
-// ├─ Call saveExpensesToFirestore(uid, appState.expenses) with updated array
-// └─ Update UI
+//  Find and remove expense from appState.expenses array
+//  Call saveExpensesToFirestore(uid, appState.expenses) with updated array
+//  Update UI
 
 await window.deleteExpenseFromUI('1234567890');
 // Result: Firestore array is updated without the deleted expense
@@ -69,10 +69,10 @@ await window.deleteExpenseFromUI('1234567890');
 ```javascript
 // 1. Call editExpense(expenseId, updates)
 // 2. editExpense() function:
-// ├─ Find expense in array
-// ├─ Merge updates with existing expense
-// ├─ Call saveExpensesToFirestore(uid, appState.expenses)
-// └─ Update UI
+//  Find expense in array
+//  Merge updates with existing expense
+//  Call saveExpensesToFirestore(uid, appState.expenses)
+//  Update UI
 
 await editExpense('1234567890', {
     amount: 600,  // Only update what changed
@@ -137,20 +137,20 @@ if (user && window.firestoreSync?.saveExpensesToFirestore) {
 
 ```
 User Action (Add/Edit/Delete)
-    ↓
+    ->
 Validate Input
-    ↓
+    ->
 Update Local appState
-    ↓
+    ->
 Try: Sync to Firestore
-    ├─ Success → Update UI → Show "Success" toast
-    └─ Failure → Rollback local state → Show "Error" toast
+     Success -> Update UI -> Show "Success" toast
+     Failure -> Rollback local state -> Show "Error" toast
     
 Offline Case:
-    ├─ Local state updated
-    ├─ Firestore sync fails (caught gracefully)
-    ├─ Data saved to localStorage
-    └─ Message shown: "Added locally, will sync when online"
+     Local state updated
+     Firestore sync fails (caught gracefully)
+     Data saved to localStorage
+     Message shown: "Added locally, will sync when online"
 ```
 
 ### 6. **UI Update Flow**
@@ -185,8 +185,8 @@ calculateRemainingBalance() {
 - [ ] Expense appears in dashboard recent list
 - [ ] Total spent updates
 - [ ] Remaining balance recalculates
-- [ ] Refresh page → expense still there
-- [ ] Check Firestore console → expense in array
+- [ ] Refresh page -> expense still there
+- [ ] Check Firestore console -> expense in array
 
 ### Delete Expense
 - [ ] Go to History page
@@ -194,20 +194,20 @@ calculateRemainingBalance() {
 - [ ] Expense disappears from list
 - [ ] Dashboard updates immediately
 - [ ] Remaining balance increases
-- [ ] Refresh page → expense stays deleted
-- [ ] Check Firestore → removed from array
+- [ ] Refresh page -> expense stays deleted
+- [ ] Check Firestore -> removed from array
 
 ### Offline Support
-- [ ] Turn off internet (DevTools → Network → Offline)
-- [ ] Add expense → still works with localStorage
-- [ ] Turn internet back on → auto-syncs to Firestore
+- [ ] Turn off internet (DevTools -> Network -> Offline)
+- [ ] Add expense -> still works with localStorage
+- [ ] Turn internet back on -> auto-syncs to Firestore
 - [ ] No data loss
 
-### ✅ Error Cases
-- [ ] Invalid amount → "Please enter valid amount"
-- [ ] No category → "Please select a category"
-- [ ] No date → "Please select a date"
-- [ ] Network error during add → proper error message
+###  Error Cases
+- [ ] Invalid amount -> "Please enter valid amount"
+- [ ] No category -> "Please select a category"
+- [ ] No date -> "Please select a date"
+- [ ] Network error during add -> proper error message
 
 ## Code Examples
 
@@ -277,7 +277,7 @@ if (result.success) {
 
 ## Files Modified
 
-1. **expense.js** (140 lines → 240 lines)
+1. **expense.js** (140 lines -> 240 lines)
    - Added: `addExpense(expense)` - async function
    - Added: `editExpense(expenseId, updates)` - async function
    - Updated: `deleteExpense(expenseId)` - now async with Firestore

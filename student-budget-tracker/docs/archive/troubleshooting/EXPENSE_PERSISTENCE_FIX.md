@@ -70,27 +70,27 @@ Both now:
 ### Adding Expense
 ```
 Form Submit
-    ↓
+    ->
 Validate input
-    ↓
+    ->
 Call addExpense(expense)
-    ├─ Call addExpenseToFirestore() → Creates users/{uid}/expenses/{id}
-    ├─ Push to appState.expenses with correct Firestore ID
-    ├─ Call saveAppData() → Save to localStorage
-    ├─ Call updateBalanceInFirestore() → Update balance
-    └─ Return { success: true, id: "..." }
-    ↓
+     Call addExpenseToFirestore() -> Creates users/{uid}/expenses/{id}
+     Push to appState.expenses with correct Firestore ID
+     Call saveAppData() -> Save to localStorage
+     Call updateBalanceInFirestore() -> Update balance
+     Return { success: true, id: "..." }
+    ->
 updateDashboard() + updateHistoryPage() + etc
-    ↓
+    ->
 User sees expense immediately
-    ↓
+    ->
 Refresh page
-    ↓
+    ->
 loadUserData() loads from Firestore AND localStorage
-    ↓
+    ->
 appState.expenses populated with correct data
-    ↓
-UI rendered with expense still there ✅
+    ->
+UI rendered with expense still there 
 ```
 
 ## Testing
@@ -108,11 +108,11 @@ UI rendered with expense still there ✅
 4. Refresh
 5. Both expenses should be there
 
-### Test 3: Offline → Online
+### Test 3: Offline -> Online
 1. Turn off internet
 2. Add expense (saves locally)
 3. Turn on internet
-4. Check Firestore → Expense there
+4. Check Firestore -> Expense there
 5. Auto-synced
 
 ### Test 4: Cross-Device Sync
@@ -167,40 +167,40 @@ Loaded from localStorage (Firestore unavailable)
 
 ### On Page Load
 1. Check Firestore for data
-2. If successful → Use Firestore data
-3. If offline/error → Fall back to localStorage
+2. If successful -> Use Firestore data
+3. If offline/error -> Fall back to localStorage
 4. appState fully initialized
 5. All UI components render
 
 ## Known Working Scenarios
 
-Add expense → Refresh → Expense persists
-Add multiple expenses → Refresh → All persist
-Delete expense → Refresh → Deletion persists
-Offline add → Online sync → Appears in Firestore
-Login on new device → See all expenses
-Change budget → Refresh → Budget persists
-Set savings goal → Refresh → Goal persists
+Add expense -> Refresh -> Expense persists
+Add multiple expenses -> Refresh -> All persist
+Delete expense -> Refresh -> Deletion persists
+Offline add -> Online sync -> Appears in Firestore
+Login on new device -> See all expenses
+Change budget -> Refresh -> Budget persists
+Set savings goal -> Refresh -> Goal persists
 
 If expenses still disappear:
 
 1. **Check Browser Storage**
-   - Open DevTools → Application → Storage
+   - Open DevTools -> Application -> Storage
    - Check localStorage has `StudentBudgetTracker_appState`
    - Should contain expenses array
 
 2. **Check Firestore**
-   - Firebase Console → Firestore
+   - Firebase Console -> Firestore
    - Navigate to `users/{uid}/expenses/`
    - Should see expense documents
 
 3. **Check Console**
-   - Open DevTools → Console
+   - Open DevTools -> Console
    - Look for error messages
    - Check for "Loaded X expenses from Firestore"
 
 4. **Check Network**
-   - DevTools → Network tab
+   - DevTools -> Network tab
    - Look for failed Firestore requests
    - Check CORS or auth errors
 

@@ -1,16 +1,16 @@
 # Quick Start Guide - Monthly Budget System
 
-## 🎯 What's New
+##  What's New
 
 Your Student Budget Tracker now has awesome new features:
-- ✅ **Monthly Budget Structure** - Track budgets per month
-- ✅ **Income Tracking** - Record all your income sources
-- ✅ **Month Switching** - Switch between months to view/edit data
-- ✅ **Monthly History** - See all your past months with summaries
-- ✅ **Smart Migration** - Old data automatically migrates to new structure
-- ✅ **Safe & Reliable** - All changes are backed up to Firebase
+-  **Monthly Budget Structure** - Track budgets per month
+-  **Income Tracking** - Record all your income sources
+-  **Month Switching** - Switch between months to view/edit data
+-  **Monthly History** - See all your past months with summaries
+-  **Smart Migration** - Old data automatically migrates to new structure
+-  **Safe & Reliable** - All changes are backed up to Firebase
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Step 1: Sign In
 Open the app and sign in with your email. If you have old data, it will automatically migrate to the new monthly structure.
@@ -49,7 +49,7 @@ Each month card shows:
 
 Click "View Details" on any month to see a detailed breakdown of all income and expenses.
 
-## 📊 Understanding Your Data
+##  Understanding Your Data
 
 ### Budget vs. Income
 - **Budget**: The maximum you plan to spend in a month (fixed)
@@ -69,7 +69,7 @@ Savings: ₦55,000 (income - expenses)
 Your budget of ₦50,000 is separate from your income!
 ```
 
-## 🔄 Switching Months
+##  Switching Months
 
 ### To View Past Month Data:
 1. Go to Budget page
@@ -83,15 +83,15 @@ Your budget of ₦50,000 is separate from your income!
 3. See all your months as cards
 4. Click any month to see details
 
-## 💾 Data Safety
+##  Data Safety
 
-✅ **Automatic Sync**: All your data syncs to Firebase in real-time  
-✅ **One-Time Migration**: Old data migrates once automatically  
-✅ **No Data Loss**: All old data is preserved  
-✅ **Offline Support**: LocalStorage keeps data if offline  
-✅ **Secure**: Only you can access your data  
+ **Automatic Sync**: All your data syncs to Firebase in real-time  
+ **One-Time Migration**: Old data migrates once automatically  
+ **No Data Loss**: All old data is preserved  
+ **Offline Support**: LocalStorage keeps data if offline  
+ **Secure**: Only you can access your data  
 
-## ❓ Common Questions
+##  Common Questions
 
 ### Q: Will my old expenses disappear?
 **A**: No! They automatically migrate to the current month on your first login.
@@ -103,7 +103,7 @@ Your budget of ₦50,000 is separate from your income!
 **A**: No! Budget and income are completely separate. Your budget stays fixed.
 
 ### Q: Can I see expenses from January if it's April now?
-**A**: Yes! Go to History page → Monthly History, find the January card, and click "View Details".
+**A**: Yes! Go to History page -> Monthly History, find the January card, and click "View Details".
 
 ### Q: What if I add an expense on April 15th in the April month?
 **A**: It will be recorded in April's expenses, regardless of the calendar date.
@@ -111,7 +111,7 @@ Your budget of ₦50,000 is separate from your income!
 ### Q: Can I delete an income entry?
 **A**: Yes! Go to Budget page, find the income entry in "Monthly Income" section, and click the trash icon.
 
-## 🎓 Tips for Better Budgeting
+##  Tips for Better Budgeting
 
 1. **Set a Realistic Budget**
    - Calculate your average monthly spending
@@ -134,7 +134,7 @@ Your budget of ₦50,000 is separate from your income!
    - Income - Expenses = Savings
    - Aim for positive savings each month
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Month selector not showing?
 - Refresh the page
@@ -157,7 +157,7 @@ Your budget of ₦50,000 is separate from your income!
 - Refresh the page
 - Check if expenses were added with correct date
 
-## 📞 Need Help?
+##  Need Help?
 
 If something isn't working:
 1. Check browser console for errors (F12)
@@ -166,7 +166,7 @@ If something isn't working:
 4. Refresh the page
 5. Check the implementation files for more details
 
-## 🎉 You're All Set!
+##  You're All Set!
 
 You now have a complete monthly budgeting system. Start:
 1. Setting monthly budgets
@@ -174,4 +174,4 @@ You now have a complete monthly budgeting system. Start:
 3. Recording expenses
 4. Watching your savings grow!
 
-Happy budgeting! 💰
+Happy budgeting! 
