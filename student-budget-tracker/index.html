@@ -5,12 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Budget Tracker</title>
+    <script>
+        (() => {
+            const key = 'studentBudgetTheme';
+            let preference = 'system';
+            try {
+                const saved = localStorage.getItem(key);
+                if (saved === 'light' || saved === 'dark' || saved === 'system') preference = saved;
+            } catch {}
+            const systemDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches || false;
+            const theme = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
+            document.documentElement.dataset.themePreference = preference;
+            document.documentElement.dataset.theme = theme;
+        })();
+    </script>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css?v=3.1">
     <link rel="stylesheet" href="styles-monthly.css?v=1.1">
     <link rel="stylesheet" href="dashboard-styles.css?v=1.0">
+    <link rel="stylesheet" href="theme.css?v=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="debug.js?v=1.0"></script>
@@ -705,24 +720,11 @@
 
                         <div class="onboarding-step" data-step="6">
                             <div class="form-group">
-                                <label>What are you planning to save for?</label>
-                                <div class="onboarding-choice-stack">
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="not-now" checked /> Not right now</label>
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="laptop" /> Laptop</label>
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="new phone" /> New phone</label>
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="school fees" /> School fees</label>
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="accommodation" /> Accommodation</label>
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="trip" /> Trip</label>
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="emergency fund" /> Emergency fund</label>
-                                    <label class="onboarding-choice"><input type="radio" name="onboarding-goal-choice" value="something else" /> Something else</label>
-                                </div>
-                            </div>
-
-                            <div class="form-group" id="onboarding-goal-details" style="display:none;">
-                                <label for="onboarding-goal-amount">Target amount</label>
-                                <div class="auth-input-wrapper">
-                                    <i class="fas fa-bullseye"></i>
-                                    <input id="onboarding-goal-amount" type="number" min="0" step="0.01" placeholder="0.00" />
+                                <label>Savings goals (optional)</label>
+                                <p class="onboarding-goal-hint">Add one or more goals, or skip this step.</p>
+                                <div id="onboarding-goals-list" class="onboarding-goals-list" aria-live="polite"></div>
+                                <div class="onboarding-goal-actions">
+                                    <button type="button" id="onboarding-add-goal" class="btn btn-secondary"><i class="fas fa-plus"></i> Add Goal</button>
                                 </div>
                             </div>
                         </div>
@@ -759,6 +761,31 @@
                         </div>
                     </form>
                 </div>
+
+                <template id="onboarding-goal-template">
+                    <div class="onboarding-goal-item">
+                        <div class="onboarding-goal-item-header">
+                            <strong>Savings goal</strong>
+                            <button type="button" class="link-button onboarding-remove-goal">Remove</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Goal name</label>
+                            <input type="text" class="onboarding-goal-name" maxlength="100" placeholder="e.g., Laptop">
+                        </div>
+                        <div class="form-group">
+                            <label>Purpose (optional)</label>
+                            <input type="text" class="onboarding-goal-description" maxlength="500" placeholder="e.g., School and programming">
+                        </div>
+                        <div class="form-group">
+                            <label>Target amount (₦)</label>
+                            <input type="number" class="onboarding-goal-target" min="0.01" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Target date (optional)</label>
+                            <input type="date" class="onboarding-goal-date">
+                        </div>
+                    </div>
+                </template>
 
             </div>
         </div>
@@ -862,7 +889,6 @@
                 </button>
             </div>
             <div class="header-content">
-                <h1><i class="fas fa-graduation-cap"></i> Student Budget Tracker</h1>
                 <p class="subtitle">Manage your finances like a pro student</p>
                 <p id="greeting-message" class="greeting-message"></p>
             </div>
@@ -1084,13 +1110,13 @@
                                 
                                 <div class="form-group">
                                     <label for="savings-goal">
-                                        <i class="fas fa-bullseye"></i> Monthly Savings Goal (Optional)
+                                        <i class="fas fa-bullseye"></i> Total Savings Targets
                                     </label>
                                     <div class="input-with-icon">
                                         <span class="currency-symbol">₦</span>
-                                        <input type="number" id="savings-goal" step="0.01" min="0" placeholder="0.00">
+                                        <input type="number" id="savings-goal" step="0.01" min="0" placeholder="0.00" readonly>
                                     </div>
-                                    <small class="form-hint">How much you want to save this month</small>
+                                    <small class="form-hint">Manage individual targets on the Savings page.</small>
                                 </div>
                                 
                                 <div class="form-group">
@@ -1346,6 +1372,16 @@
                                     <span class="stat-value" id="average-expense">₦0.00</span>
                                 </div>
                             </div>
+                            <div class="history-savings-summary" aria-live="polite">
+                                <div>
+                                    <span>Savings deposits</span>
+                                    <strong id="history-savings-deposits">₦0.00</strong>
+                                </div>
+                                <div>
+                                    <span>Savings withdrawals</span>
+                                    <strong id="history-savings-withdrawals">₦0.00</strong>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1394,6 +1430,9 @@
                         <div class="month-expenses-list">
                             <!-- Expense items will be filled here -->
                         </div>
+                        <div class="month-savings-list">
+                            <!-- Dated savings movements will be filled here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1407,43 +1446,32 @@
                 </div>
                 
                 <div class="savings-content">
-                    <div class="savings-goal-card card">
-                        <div class="card-content">
-                            <h3><i class="fas fa-bullseye"></i> Savings Goal</h3>
-                            <div class="savings-goal-display">
-                                <div class="goal-info">
-                                    <div class="goal-item">
-                                        <span class="goal-label">Monthly Goal:</span>
-                                        <span class="goal-value" id="savings-goal-display">₦0.00</span>
-                                    </div>
-                                    <div class="goal-item">
-                                        <span class="goal-label">Current Savings:</span>
-                                        <span class="goal-value" id="current-savings-display">₦0.00</span>
-                                    </div>
-                                    <div class="goal-item">
-                                        <span class="goal-label">Progress:</span>
-                                        <span class="goal-value" id="savings-progress-percent">0%</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="goal-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill savings-fill" id="savings-progress-fill"></div>
-                                    </div>
-                                    <div class="progress-label">
-                                        <span id="savings-progress-text">₦0.00 of ₦0.00 saved</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <form id="savings-goal-form" class="savings-goal-editor">
-                                <label for="savings-goal-amount">Create or edit your goal</label>
-                                <div class="savings-goal-editor-row">
-                                    <input type="number" id="savings-goal-amount" min="0" step="0.01" placeholder="Target amount">
-                                    <button type="submit" class="btn btn-secondary"><i class="fas fa-save"></i> Save goal</button>
-                                </div>
-                            </form>
+                    <div class="savings-summary-grid" aria-live="polite">
+                        <div class="card savings-summary-card">
+                            <span class="savings-summary-label">TOTAL SAVED</span>
+                            <strong id="savings-total-saved">₦0.00</strong>
+                        </div>
+                        <div class="card savings-summary-card">
+                            <span class="savings-summary-label">TOTAL TARGET</span>
+                            <strong id="savings-total-target">₦0.00</strong>
+                        </div>
+                        <div class="card savings-summary-card">
+                            <span class="savings-summary-label">ACTIVE GOALS</span>
+                            <strong id="savings-active-goals">0</strong>
                         </div>
                     </div>
+
+                    <section class="savings-goals-section" aria-labelledby="savings-goals-heading">
+                        <div class="savings-goals-toolbar">
+                            <h3 id="savings-goals-heading">Your goals</h3>
+                            <button type="button" id="savings-create-goal-button" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create Goal
+                            </button>
+                        </div>
+                        <div id="savings-goals-list" class="savings-goals-grid" aria-live="polite">
+                            <div class="loading">Loading savings goals...</div>
+                        </div>
+                    </section>
                     
                     <div class="savings-tips card">
                         <div class="card-content">
@@ -1473,39 +1501,6 @@
                         </div>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-content">
-                            <h3><i class="fas fa-plus-circle"></i> Add Savings</h3>
-                            <form id="add-savings-form">
-                                <div class="form-group">
-                                    <label for="savings-goal-select">Savings goal</label>
-                                    <select id="savings-goal-select">
-                                        <option value="">No goal set yet</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="savings-amount">Amount to save</label>
-                                    <div class="input-with-icon">
-                                        <span class="currency-symbol">₦</span>
-                                        <input type="number" id="savings-amount" min="0.01" step="0.01" placeholder="0.00" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="savings-note">Note (optional)</label>
-                                    <textarea id="savings-note" rows="2" placeholder="e.g., From side hustle"></textarea>
-                                </div>
-
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary btn-large">
-                                        <i class="fas fa-piggy-bank"></i> Save ₦ amount
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
                     <div class="safe-spend-editor card">
                         <div class="card-content">
                             <h3><i class="fas fa-shield-heart"></i> Safe to Spend</h3>
@@ -1552,6 +1547,71 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div id="savings-goal-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="savings-goal-modal-title">
+                    <div class="modal-content savings-modal-content">
+                        <div class="savings-modal-header">
+                            <h3 id="savings-goal-modal-title">Create Goal</h3>
+                            <button type="button" class="savings-modal-close" data-close-savings-modal aria-label="Close">&times;</button>
+                        </div>
+                        <form id="savings-goal-form">
+                            <input type="hidden" id="savings-goal-id">
+                            <div class="form-group">
+                                <label for="savings-goal-name">Goal name</label>
+                                <input type="text" id="savings-goal-name" maxlength="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="savings-goal-description">Purpose (optional)</label>
+                                <textarea id="savings-goal-description" rows="2" maxlength="500"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="savings-goal-target">Target amount (₦)</label>
+                                <input type="number" id="savings-goal-target" min="0.01" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="savings-goal-date">Target date (optional)</label>
+                                <input type="date" id="savings-goal-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="savings-goal-icon">Icon (optional)</label>
+                                <input type="text" id="savings-goal-icon" maxlength="8" placeholder="🎯">
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" data-close-savings-modal>Cancel</button>
+                                <button type="submit" id="savings-goal-submit" class="btn btn-primary">Create Goal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="savings-movement-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="savings-movement-title">
+                    <div class="modal-content savings-modal-content">
+                        <div class="savings-modal-header">
+                            <h3 id="savings-movement-title">Add Money</h3>
+                            <button type="button" class="savings-modal-close" data-close-savings-modal aria-label="Close">&times;</button>
+                        </div>
+                        <form id="savings-movement-form">
+                            <input type="hidden" id="savings-movement-goal-id">
+                            <input type="hidden" id="savings-movement-type">
+                            <div class="form-group">
+                                <label for="savings-movement-amount">Amount (₦)</label>
+                                <input type="number" id="savings-movement-amount" min="0.01" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="savings-movement-date">Date</label>
+                                <input type="date" id="savings-movement-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="savings-movement-note">Note (optional)</label>
+                                <textarea id="savings-movement-note" rows="2" maxlength="500"></textarea>
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" data-close-savings-modal>Cancel</button>
+                                <button type="submit" id="savings-movement-submit" class="btn btn-primary">Continue</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -1624,6 +1684,17 @@
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    <div class="card appearance-card">
+                        <div class="card-content">
+                            <h3><i class="fas fa-adjust"></i> Appearance</h3>
+                            <fieldset class="theme-options" aria-label="Appearance theme">
+                                <label><input type="radio" name="theme-preference" value="system"><span>System</span></label>
+                                <label><input type="radio" name="theme-preference" value="light"><span>Light</span></label>
+                                <label><input type="radio" name="theme-preference" value="dark"><span>Dark</span></label>
+                            </fieldset>
                         </div>
                     </div>
 
@@ -1702,6 +1773,7 @@
     <script src="history.js?v=3.0"></script>
     <script src="history-monthly.js?v=3.0"></script>
     <script src="savings.js?v=3.0"></script>
+    <script src="theme.js?v=1.0"></script>
     <script type="module" src="supabase-client.js?v=1.0"></script>
     <!-- Authentication and Firebase (after app scripts) -->
     <script type="module" src="main.js?v=5.0"></script>

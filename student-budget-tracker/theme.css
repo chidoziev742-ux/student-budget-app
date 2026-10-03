@@ -1,0 +1,737 @@
+:root {
+  color-scheme: light;
+  --theme-bg: #fffdf9;
+  --theme-surface: #ffffff;
+  --theme-surface-soft: #f7f8f6;
+  --theme-surface-raised: #ffffff;
+  --theme-text: #17231e;
+  --theme-text-secondary: #526159;
+  --theme-text-muted: #718078;
+  --theme-border: #dfe6e1;
+  --theme-input: #ffffff;
+  --theme-link: #17664b;
+  --remove-accent: #b9604e;
+  --remove-accent-surface: #fff3ef;
+  --theme-shadow-card: none;
+  --theme-shadow-modal: 0 16px 42px rgba(0, 0, 0, 0.18);
+  --theme-shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --theme-bg: #111a16;
+  --theme-surface: #18231e;
+  --theme-surface-soft: #202d26;
+  --theme-surface-raised: #26352d;
+  --theme-text: #edf3ef;
+  --theme-text-secondary: #c1cec6;
+  --theme-text-muted: #9aaba1;
+  --theme-border: #34463c;
+  --theme-input: #111a16;
+  --theme-link: #9bd5b7;
+  --remove-accent: #e2a08b;
+  --remove-accent-surface: #382722;
+  --theme-shadow-card: none;
+  --theme-shadow-modal: 0 16px 42px rgba(0, 0, 0, 0.48);
+  --theme-shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.42);
+
+  --primary-color: #78c6a0;
+  --primary-light: #9bd5b7;
+  --secondary-color: #286449;
+  --success-color: #78c6a0;
+  --danger-color: #f1847e;
+  --warning-color: #f0ad73;
+  --info-color: #79c4b2;
+  --dark-color: var(--theme-text);
+  --light-color: var(--theme-surface-soft);
+  --gray-color: var(--theme-text-muted);
+  --border-color: var(--theme-border);
+
+  --v2-green: #78c6a0;
+  --v2-green-dark: #286449;
+  --v2-green-light: #20372b;
+  --v2-orange: #e99a66;
+  --v2-orange-dark: #cc794a;
+  --v2-cream: var(--theme-bg);
+  --v2-white: var(--theme-surface);
+  --v2-text: var(--theme-text);
+  --v2-muted: var(--theme-text-muted);
+  --v2-border: var(--theme-border);
+  --v2-error: #f1847e;
+
+  --dash-green-deep: #164b37;
+  --dash-green-dark: #103a2b;
+  --dash-green-medium: #72bd91;
+  --dash-green-light: #20372b;
+  --dash-orange: #e99a66;
+  --dash-orange-red: #e48761;
+  --dash-cream: #26352d;
+  --dash-cream-soft: #202d26;
+  --dash-white: var(--theme-surface);
+  --dash-dark: var(--theme-text);
+  --dash-muted: var(--theme-text-muted);
+  --dash-bg: var(--theme-bg);
+  --dash-card-shadow: none;
+  --dash-card-shadow-hover: none;
+}
+
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] #auth-screen .auth-submit {
+  background-color: #286449;
+  color: #f7fbf8;
+}
+
+:root[data-theme="dark"] .btn-primary:hover,
+:root[data-theme="dark"] #auth-screen .auth-submit:hover {
+  background-color: #347858;
+  color: #ffffff;
+}
+
+#auth-screen .onboarding-remove-goal {
+  border-color: var(--remove-accent);
+  background: var(--remove-accent-surface);
+  color: var(--remove-accent);
+}
+
+#auth-screen .onboarding-remove-goal:hover {
+  border-color: var(--remove-accent);
+  background: var(--remove-accent);
+  color: #fffaf8;
+}
+
+#auth-screen .onboarding-remove-goal:active {
+  background: var(--remove-accent);
+  color: #fffaf8;
+}
+
+#auth-screen .onboarding-remove-goal:focus-visible {
+  outline: 2px solid var(--remove-accent);
+  outline-offset: 2px;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+body,
+.app-container,
+.main-area,
+.main-content,
+.page {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+.app-container {
+  box-shadow: none;
+}
+
+.app-header {
+  border-color: var(--theme-border);
+}
+
+:where(h1, h2, h3, h4, h5, h6, p, label, legend, .card-subtitle, .form-hint) {
+  color: inherit;
+}
+
+:is(
+  .card,
+  .dashboard-card,
+  .summary-card,
+  .month-card,
+  .expenses-list-container,
+  .history-summary,
+  .monthly-history-section,
+  .savings-goal-item,
+  .savings-summary-card,
+  .budget-form-container > .card,
+  .expense-form-container > .card
+) {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--theme-shadow-card);
+}
+
+.card:hover,
+.summary-card:hover,
+.dashboard-card:hover,
+.month-card:hover {
+  transform: none;
+  box-shadow: var(--theme-shadow-card);
+}
+
+.v2-summary-cards .card,
+.v2-panel {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  box-shadow: var(--theme-shadow-card);
+}
+
+.v2-summary-cards .card:hover {
+  transform: none;
+  box-shadow: var(--theme-shadow-card);
+}
+
+.card-content,
+.dashboard-card-body,
+.dashboard-card-header,
+.history-controls,
+.filter-controls {
+  color: var(--theme-text);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  color-scheme: inherit;
+  background-color: var(--theme-input);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--theme-text-muted);
+  opacity: 1;
+}
+
+:root[data-theme="dark"] option {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+:root[data-theme="dark"] input:focus,
+:root[data-theme="dark"] select:focus,
+:root[data-theme="dark"] textarea:focus {
+  border-color: var(--primary-light);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(120, 198, 160, 0.16);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline-color: var(--primary-light);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--primary-color);
+}
+
+.btn-secondary,
+.btn-outline {
+  background-color: var(--theme-surface-soft);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.btn-secondary:hover,
+.btn-outline:hover {
+  background-color: var(--theme-surface-raised);
+}
+
+.card,
+.dashboard-card,
+.summary-card,
+.month-card,
+.expenses-list-container,
+.savings-goal-item,
+.transaction-item,
+.detail-entry,
+.expense-item,
+.expenses-list-container,
+.income-item,
+.expense-item-minimal,
+.notification-item,
+.safe-spend-card,
+.onboarding-goal-item,
+.onboarding-review,
+.onboarding-choice {
+  border-color: var(--theme-border);
+}
+
+.expense-item,
+.income-item,
+.expense-item-minimal,
+.detail-entry,
+.transaction-item,
+.month-card,
+.month-stat,
+.profile-item,
+.summary-stats .stat,
+.category-budget-item {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+.safe-spend-card {
+  background-color: var(--dash-green-light);
+}
+
+.month-pill,
+.current-month-display,
+.month-badge,
+.count-badge {
+  background-color: var(--theme-surface-soft);
+  color: var(--theme-text-secondary);
+  border-color: var(--theme-border);
+  box-shadow: none;
+}
+
+.expense-reason,
+.expense-details,
+.entry-title,
+.entry-details,
+.income-source,
+.income-details,
+.stat-value,
+.summary-card-content,
+.profile-info,
+.month-stat .stat-value {
+  color: var(--theme-text);
+}
+
+.expense-meta,
+.expense-date,
+.expense-category,
+.entry-category,
+.entry-date,
+.income-date,
+.stat-label,
+.detail-label,
+.form-hint,
+.empty-note,
+.empty-state p {
+  color: var(--theme-text-muted);
+}
+
+.savings-goal-icon,
+.progress-bar,
+.category-progress .progress-bar,
+.goal-progress .progress-bar,
+.onboarding-review,
+.onboarding-goal-item,
+.onboarding-choice,
+.auth-input-wrapper {
+  background-color: var(--theme-surface-soft);
+  border-color: var(--theme-border);
+}
+
+.toggle-row {
+  background-color: var(--theme-surface-soft);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.toggle-text,
+.profile-info strong,
+.goal-value,
+.entry-title,
+.savings-summary-card strong {
+  color: var(--theme-text);
+}
+
+.modal-content,
+.auth-container,
+.auth-card {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.modal-content {
+  box-shadow: var(--theme-shadow-modal);
+}
+
+:root[data-theme="dark"] #month-details-modal .modal-content,
+:root[data-theme="dark"] #confirmation-modal .modal-content,
+:root[data-theme="dark"] .savings-modal-content {
+  background-color: var(--theme-surface) !important;
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.modal-header,
+.month-details-summary,
+.detail-stat {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+#auth-screen.auth-screen {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+#auth-screen .auth-container {
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.16);
+}
+
+:root[data-theme="dark"] #auth-screen .auth-container,
+:root[data-theme="dark"] #auth-screen .auth-card {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+}
+
+#auth-screen .auth-card,
+#auth-screen .auth-form,
+#auth-screen .onboarding-form {
+  color: var(--theme-text);
+}
+
+#auth-screen .auth-heading h2,
+#auth-screen .auth-heading p,
+#auth-screen .form-group label,
+#auth-screen .auth-switch {
+  color: var(--theme-text);
+}
+
+:root[data-theme="dark"] #auth-screen input,
+:root[data-theme="dark"] #auth-screen select,
+:root[data-theme="dark"] #auth-screen textarea {
+  background-color: var(--theme-input);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+:root[data-theme="dark"] #auth-screen input::placeholder,
+:root[data-theme="dark"] #auth-screen textarea::placeholder {
+  color: var(--theme-text-muted);
+  opacity: 1;
+}
+
+:root[data-theme="dark"] #auth-screen select option {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+:root[data-theme="dark"] #auth-screen input:focus,
+:root[data-theme="dark"] #auth-screen select:focus,
+:root[data-theme="dark"] #auth-screen textarea:focus {
+  background-color: var(--theme-input);
+  border-color: #78c6a0;
+  box-shadow: 0 0 0 3px rgba(120, 198, 160, 0.16);
+}
+
+:root[data-theme="dark"] #auth-screen .select-wrapper::after,
+:root[data-theme="dark"] #auth-screen .password-toggle {
+  color: var(--theme-text-muted);
+}
+
+:root[data-theme="dark"] #auth-screen .onboarding-progress-bar {
+  background-color: var(--theme-surface-raised);
+}
+
+#auth-screen .onboarding-hero-card,
+#auth-screen .onboarding-review,
+#auth-screen .onboarding-goal-item,
+#auth-screen .onboarding-choice {
+  background-color: var(--theme-surface-soft);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+#auth-screen .onboarding-goal-hint {
+  color: var(--theme-text-muted);
+}
+
+#auth-screen .onboarding-review h3,
+#auth-screen .onboarding-review ul,
+#auth-screen .onboarding-goal-item-header {
+  color: var(--theme-text);
+}
+
+#auth-screen .auth-switch a,
+#auth-screen .link-button {
+  color: var(--theme-link);
+}
+
+#month-selector,
+#filter-month,
+#filter-category,
+#budget-category {
+  background-color: var(--theme-input);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.empty-state,
+.empty-state i,
+.empty-notifications,
+.loading {
+  color: var(--theme-text-secondary);
+}
+
+.error-message {
+  color: var(--danger-color);
+}
+
+.empty-state i {
+  color: var(--theme-text-muted);
+}
+
+:root[data-theme="dark"] .success-message {
+  background-color: #20372b;
+  border-color: #3b624c;
+  color: #b6e6c5;
+}
+
+.toast,
+.notification-toast,
+.notification-panel {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  box-shadow: var(--theme-shadow-floating);
+}
+
+:root[data-theme="dark"] .toast,
+:root[data-theme="dark"] .notification-toast,
+:root[data-theme="dark"] .notification-panel {
+  background-color: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border);
+  box-shadow: var(--theme-shadow-floating) !important;
+}
+
+.notification-panel-header,
+.notification-panel-footer,
+.notification-item,
+.notification-item:hover,
+.notification-item.unread,
+.notification-item.unread:hover {
+  background-color: var(--theme-surface-soft);
+  border-color: var(--theme-border);
+}
+
+:root[data-theme="dark"] .notification-panel-header,
+:root[data-theme="dark"] .notification-panel-footer,
+:root[data-theme="dark"] .notification-item,
+:root[data-theme="dark"] .notification-item:hover,
+:root[data-theme="dark"] .notification-item.unread,
+:root[data-theme="dark"] .notification-item.unread:hover {
+  background-color: var(--theme-surface-soft) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.notification-title,
+.notification-panel-header h3,
+.notification-item-title {
+  color: var(--theme-text) !important;
+}
+
+.notification-message,
+.notification-item-message,
+.notification-time,
+.notification-item-time,
+.notification-panel-close,
+.notification-item-dismiss,
+.notification-item-dismiss:hover,
+.empty-notifications p {
+  color: var(--theme-text-secondary) !important;
+}
+
+:root[data-theme="dark"] .notification-panel-close {
+  color: var(--theme-text-secondary) !important;
+  background: transparent;
+}
+
+:root[data-theme="dark"] .notification-panel-close:hover,
+:root[data-theme="dark"] .notification-panel-close:active {
+  color: #e2a08b !important;
+  background-color: rgba(226, 160, 139, 0.14) !important;
+}
+
+:root[data-theme="dark"] .notification-panel-close:focus-visible {
+  color: #e2a08b !important;
+  outline: 2px solid rgba(226, 160, 139, 0.58);
+  outline-offset: 2px;
+}
+
+.balance-hero-card,
+.v2-hero-card {
+  box-shadow: 0 6px 20px rgba(6, 63, 50, 0.16);
+}
+
+.sidebar {
+  box-shadow: none;
+}
+
+.spending-chart-inner {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+.spending-chart-inner strong,
+.legend-name,
+.category-amount {
+  color: var(--theme-text);
+}
+
+.spending-chart-inner span,
+.legend-value {
+  color: var(--theme-text-muted);
+}
+
+.category-progress .progress-bar,
+.goal-progress .progress-bar {
+  background: var(--theme-surface-raised);
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+.theme-options label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--theme-border);
+  border-radius: 8px;
+  background: var(--theme-surface-soft);
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+}
+
+.theme-options input {
+  width: auto;
+  min-height: auto;
+  accent-color: var(--primary-color);
+}
+
+.theme-options label:has(input:checked) {
+  border-color: var(--primary-color);
+  color: var(--theme-text);
+  box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+.theme-options label:focus-within {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .theme-options {
+    gap: 6px;
+  }
+
+  .theme-options label {
+    min-width: 0;
+    padding: 8px 4px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Softer Remove button */
+#auth-screen .onboarding-remove-goal:hover,
+#auth-screen .onboarding-remove-goal:active {
+  border-color: var(--remove-accent);
+  background: var(--remove-accent-surface);
+  color: var(--remove-accent);
+}
+
+/* Individual notification dismiss X */
+.notification-item-dismiss {
+  color: var(--theme-text-muted) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.notification-item-dismiss:hover,
+.notification-item-dismiss:focus,
+.notification-item-dismiss:active {
+  color: #c97b68 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="dark"] .notification-item-dismiss {
+  color: #9aaba1 !important;
+  background: transparent !important;
+}
+
+:root[data-theme="dark"] .notification-item-dismiss:hover,
+:root[data-theme="dark"] .notification-item-dismiss:focus,
+:root[data-theme="dark"] .notification-item-dismiss:active {
+  color: #d28b78 !important;
+  background: transparent !important;
+}
+/* below is the fix for the smaller x icon in notification  */
+.notification-item-dismiss,
+.notification-item-dismiss:hover,
+.notification-item-dismiss:focus,
+.notification-item-dismiss:active {
+  color: var(--theme-text-muted) !important;
+  background: transparent !important;
+  border: 0 !important;
+  outline: none;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Catch icon elements inside the dismiss button */
+.notification-item-dismiss i,
+.notification-item-dismiss svg,
+.notification-item-dismiss span,
+.notification-item-dismiss::before,
+.notification-item-dismiss::after {
+  color: inherit !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  background: transparent !important;
+}
+
+/* Dark mode */
+:root[data-theme="dark"] .notification-item-dismiss,
+:root[data-theme="dark"] .notification-item-dismiss:hover,
+:root[data-theme="dark"] .notification-item-dismiss:focus,
+:root[data-theme="dark"] .notification-item-dismiss:active {
+  color: #9aaba1 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Subtle coral only while hovering */
+:root[data-theme="dark"] .notification-item-dismiss:hover {
+  color: #d28b78 !important;
+}
+
+:root[data-theme="dark"] .notification-item-dismiss i,
+:root[data-theme="dark"] .notification-item-dismiss svg,
+:root[data-theme="dark"] .notification-item-dismiss span,
+:root[data-theme="dark"] .notification-item-dismiss::before,
+:root[data-theme="dark"] .notification-item-dismiss::after {
+  color: inherit !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
