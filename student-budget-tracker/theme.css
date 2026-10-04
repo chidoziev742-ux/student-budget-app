@@ -735,3 +735,21 @@ input[type="radio"] {
   fill: currentColor !important;
   stroke: currentColor !important;
 }
+
+/* Fix notification toggle touch/focus state in dark mode */
+:root[data-theme="dark"] .toggle-row,
+:root[data-theme="dark"] .toggle-row:hover,
+:root[data-theme="dark"] .toggle-row:focus,
+:root[data-theme="dark"] .toggle-row:focus-within,
+:root[data-theme="dark"] .toggle-row:active {
+  background-color: var(--theme-surface-soft) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+  box-shadow: none !important;
+}
+
+/* Prevent mobile tap highlight from flashing/lightening the control */
+:root[data-theme="dark"] .toggle-row,
+:root[data-theme="dark"] .toggle-row * {
+  -webkit-tap-highlight-color: transparent;
+}
