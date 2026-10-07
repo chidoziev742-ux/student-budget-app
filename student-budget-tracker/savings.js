@@ -12,7 +12,13 @@ async function loadDailySpendingAmount() {
 
   const result = await window.firebaseAuth.getOnboardingStatus(user.uid);
   const savedValue = result?.onboarding?.safe_daily_spending;
-  if (savedValue != null) input.value = savedValue;
+  if (savedValue != null) {
+    // V2.2: display pre-existing amounts with comma formatting
+    const _fmtMoney = window.moneyInputFormat?.formatMoneyString;
+    input.value = _fmtMoney
+      ? _fmtMoney(String(savedValue), true)
+      : savedValue;
+  }
 }
 
 async function saveDailySpendingAmount() {
@@ -20,7 +26,9 @@ async function saveDailySpendingAmount() {
   const user = window.firebaseAuth?.getCurrentUser?.();
   if (!input || !user || !window.firebaseAuth?.saveOnboardingProgress) return;
 
-  const value = Number(input.value || 0);
+  // V2.2: strip commas from formatted display value before any numeric use
+  const rawVal = input.value || "0";
+  const value = (window.moneyInputFormat?.parseMoneyValue ?? (v => Number(String(v).replace(/,/g, ''))))(rawVal);
   if (!Number.isFinite(value) || value < 0) return;
 
   const result = await window.firebaseAuth.saveOnboardingProgress(
@@ -76,8 +84,13 @@ function openSavingsGoalModal(goal = null) {
   document.getElementById("savings-goal-name").value = goal?.name || "";
   document.getElementById("savings-goal-description").value =
     goal?.description || "";
+  // V2.2: display pre-existing amounts with comma formatting
+  const _fmtMoney = window.moneyInputFormat?.formatMoneyString;
+  const rawTarget = goal?.target_amount ?? "";
   document.getElementById("savings-goal-target").value =
-    goal?.target_amount ?? "";
+    (rawTarget !== "" && _fmtMoney)
+      ? _fmtMoney(String(rawTarget), true)
+      : rawTarget;
   document.getElementById("savings-goal-date").value = goal?.target_date || "";
   document.getElementById("savings-goal-icon").value = goal?.icon || "";
 
@@ -248,7 +261,9 @@ async function handleSavingsGoalSubmit(event) {
   }
 
   const goalId = document.getElementById("savings-goal-id").value;
-  const amount = Number(document.getElementById("savings-goal-target").value);
+  // V2.2: strip commas from formatted display value before any numeric use
+  const _parseMoney = window.moneyInputFormat?.parseMoneyValue ?? (v => Number(String(v).replace(/,/g, '')));
+  const amount = _parseMoney(document.getElementById("savings-goal-target").value);
   if (!Number.isFinite(amount) || amount <= 0) {
     showToast("Target amount must be greater than zero.", "error");
     return;
@@ -295,7 +310,8 @@ async function handleSavingsMovementSubmit(event) {
 
   const goalId = document.getElementById("savings-movement-goal-id").value;
   const type = document.getElementById("savings-movement-type").value;
-  const amount = Number(
+  // V2.2: strip commas from formatted display value before any numeric use
+  const amount = (window.moneyInputFormat?.parseMoneyValue ?? (v => Number(String(v).replace(/,/g, ''))))(
     document.getElementById("savings-movement-amount").value,
   );
   const date = document.getElementById("savings-movement-date").value;

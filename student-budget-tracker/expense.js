@@ -33,7 +33,8 @@ async function handleExpenseSubmit(e) {
     const dateInput = document.getElementById('expense-date');
     const reasonTextarea = document.getElementById('expense-reason');
     
-    const amount = parseFloat(amountInput.value);
+    // V2.2: strip commas from formatted display value before any numeric use
+    const amount = (window.moneyInputFormat?.parseMoneyValue ?? parseFloat)(amountInput.value);
     const category = categorySelect.value;
     const date = dateInput.value;
     const reason = reasonTextarea.value.trim();

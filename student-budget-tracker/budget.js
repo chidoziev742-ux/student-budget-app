@@ -36,9 +36,11 @@ function handleBudgetSubmit(e) {
   const savingsGoalInput = document.getElementById("savings-goal");
   const categorySelect = document.getElementById("budget-category");
 
-  const amount = parseFloat(amountInput.value);
+  // V2.2: strip commas from formatted display value before any numeric use
+  const _parseMoney = window.moneyInputFormat?.parseMoneyValue ?? parseFloat;
+  const amount = _parseMoney(amountInput.value);
   const savingsGoal = savingsGoalInput.value
-    ? parseFloat(savingsGoalInput.value)
+    ? _parseMoney(savingsGoalInput.value)
     : 0;
   const category = categorySelect.value || null;
 
@@ -242,7 +244,11 @@ function updateMonthlyBudgetDisplay(monthData) {
   );
 
   if (budgetInput) {
-    budgetInput.value = monthData.budget || 0;
+    // V2.2: format the value with commas for display
+    const rawBudget = monthData.budget || 0;
+    budgetInput.value = window.moneyInputFormat?.formatMoneyString
+      ? window.moneyInputFormat.formatMoneyString(String(rawBudget), true)
+      : rawBudget;
   }
   if (savingsGoalInput) {
     savingsGoalInput.value = monthData.savingsGoal || 0;
@@ -349,7 +355,8 @@ async function handleMonthlyBudgetUpdate(e) {
 
   const budgetInput = document.getElementById("monthly-budget");
   const savingsGoalInput = document.getElementById("savings-goal");
-  const amount = parseFloat(budgetInput.value);
+  // V2.2: strip commas from formatted display value before any numeric use
+  const amount = (window.moneyInputFormat?.parseMoneyValue ?? parseFloat)(budgetInput.value);
 
   if (!amount || amount <= 0) {
     showToast("Please enter a valid budget amount", "error");
@@ -419,7 +426,8 @@ async function handleAddIncome(e) {
   const sourceInput = document.getElementById("income-source");
   const dateInput = document.getElementById("income-date");
 
-  const amount = parseFloat(amountInput.value);
+  // V2.2: strip commas from formatted display value before any numeric use
+  const amount = (window.moneyInputFormat?.parseMoneyValue ?? parseFloat)(amountInput.value);
   const source = sourceInput.value.trim();
   const date = dateInput.value;
 

@@ -206,7 +206,7 @@ function collectOnboardingGoals() {
       name: row.querySelector(".onboarding-goal-name")?.value.trim() || "",
       description:
         row.querySelector(".onboarding-goal-description")?.value.trim() || "",
-      target_amount: Number(
+      target_amount: window.moneyInputFormat.parseMoneyValue(
         row.querySelector(".onboarding-goal-target")?.value || 0,
       ),
       target_date: row.querySelector(".onboarding-goal-date")?.value || "",
@@ -229,6 +229,12 @@ function addOnboardingGoalRow(goal = {}) {
   row.querySelector(".onboarding-goal-target").value = goal.target_amount || "";
   row.querySelector(".onboarding-goal-date").value = goal.target_date || "";
   list.appendChild(row);
+  if (window.moneyInputFormat) {
+    window.moneyInputFormat.initMoneyInput(
+      row.querySelector(".onboarding-goal-target"),
+      { allowDecimals: true },
+    );
+  }
 }
 
 function escapeOnboardingText(value) {
@@ -916,7 +922,7 @@ async function submitOnboarding(e) {
 
     const draft = getOnboardingDraft();
     const requestedGoals = collectOnboardingGoals();
-    const onboardingIncome = Number(
+    const onboardingIncome = window.moneyInputFormat.parseMoneyValue(
       document.getElementById("onboarding-income-amount")?.value ||
         draft.income_amount ||
         0,
@@ -973,7 +979,7 @@ async function submitOnboarding(e) {
       spending_categories: Array.isArray(draft.spending_categories)
         ? draft.spending_categories
         : collectOnboardingCheckboxes(),
-      safe_daily_spending: Number(
+      safe_daily_spending: window.moneyInputFormat.parseMoneyValue(
         document.getElementById("onboarding-safe-daily-spending")?.value ||
           draft.safe_daily_spending ||
           0,
@@ -1091,14 +1097,14 @@ function persistOnboardingDraft() {
   const draft = getOnboardingDraft();
   draft.income_source =
     document.getElementById("onboarding-income-source")?.value || "";
-  draft.income_amount = Number(
+  draft.income_amount = window.moneyInputFormat.parseMoneyValue(
     document.getElementById("onboarding-income-amount")?.value || 0,
   );
   draft.income_frequency =
     document.getElementById("onboarding-income-frequency")?.value || "monthly";
   draft.next_income_date =
     document.getElementById("onboarding-next-income-date")?.value || "";
-  draft.safe_daily_spending = Number(
+  draft.safe_daily_spending = window.moneyInputFormat.parseMoneyValue(
     document.getElementById("onboarding-safe-daily-spending")?.value || 0,
   );
   draft.spending_categories = collectOnboardingCheckboxes();

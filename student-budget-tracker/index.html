@@ -669,7 +669,7 @@
                                 <label for="onboarding-income-amount">How much money do you normally receive?</label>
                                 <div class="auth-input-wrapper">
                                     <i class="fas fa-coins"></i>
-                                    <input id="onboarding-income-amount" type="number" min="0" step="0.01" placeholder="0.00" />
+                                    <input id="onboarding-income-amount" type="text" inputmode="decimal" min="0" step="0.01" placeholder="0.00" />
                                 </div>
                             </div>
                         </div>
@@ -734,7 +734,7 @@
                                 <label for="onboarding-safe-daily-spending">Based on your plan, what is a safe amount to spend today?</label>
                                 <div class="auth-input-wrapper">
                                     <i class="fas fa-shield-heart"></i>
-                                    <input id="onboarding-safe-daily-spending" type="number" min="0" step="0.01" placeholder="0.00" />
+                                    <input id="onboarding-safe-daily-spending" type="text" inputmode="decimal" min="0" step="0.01" placeholder="0.00" />
                                 </div>
                             </div>
 
@@ -778,7 +778,7 @@
                         </div>
                         <div class="form-group">
                             <label>Target amount (₦)</label>
-                            <input type="number" class="onboarding-goal-target" min="0.01" step="0.01" placeholder="0.00">
+                            <input type="text" inputmode="decimal" class="onboarding-goal-target" min="0.01" step="0.01" placeholder="0.00">
                         </div>
                         <div class="form-group">
                             <label>Target date (optional)</label>
@@ -1103,7 +1103,7 @@
                                     </label>
                                     <div class="input-with-icon">
                                         <span class="currency-symbol">₦</span>
-                                        <input type="number" id="monthly-budget" step="0.01" min="0" placeholder="0.00" required>
+                                        <input type="text" inputmode="decimal" id="monthly-budget" step="0.01" min="0" placeholder="0.00" required>
                                     </div>
                                     <small class="form-hint">Enter your total monthly budget</small>
                                 </div>
@@ -1170,7 +1170,7 @@
                                     </label>
                                     <div class="input-with-icon">
                                         <span class="currency-symbol">₦</span>
-                                        <input type="number" id="income-amount" step="0.01" min="0" placeholder="0.00" required>
+                                        <input type="text" inputmode="decimal" id="income-amount" step="0.01" min="0" placeholder="0.00" required>
                                     </div>
                                 </div>
                                 
@@ -1508,7 +1508,7 @@
                             <form id="safe-spend-form">
                                 <div class="form-group">
                                     <label for="daily-savings">Safe to spend today (₦)</label>
-                                    <input type="number" id="daily-savings" min="0" step="0.01" value="5.00">
+                                    <input type="text" inputmode="decimal" id="daily-savings" min="0" step="0.01" value="5.00">
                                     <div class="form-hint" id="daily-savings-save-status"></div>
                                 </div>
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save safe amount</button>
@@ -1524,7 +1524,7 @@
                             <div class="calculator-form">
                                 <div class="form-group">
                                     <label for="daily-savings-calculator">Daily savings amount (₦)</label>
-                                    <input type="number" id="daily-savings-calculator" min="0" step="0.01" value="5.00">
+                                    <input type="text" inputmode="decimal" id="daily-savings-calculator" min="0" step="0.01" value="5.00">
                                 </div>
                                 <div class="calculator-results">
                                     <div class="result-item">
@@ -1568,7 +1568,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="savings-goal-target">Target amount (₦)</label>
-                                <input type="number" id="savings-goal-target" min="0.01" step="0.01" required>
+                                <input type="text" inputmode="decimal" id="savings-goal-target" min="0.01" step="0.01" required>
                             </div>
                             <div class="form-group">
                                 <label for="savings-goal-date">Target date (optional)</label>
@@ -1597,7 +1597,7 @@
                             <input type="hidden" id="savings-movement-type">
                             <div class="form-group">
                                 <label for="savings-movement-amount">Amount (₦)</label>
-                                <input type="number" id="savings-movement-amount" min="0.01" step="0.01" required>
+                                <input type="text" inputmode="decimal" id="savings-movement-amount" min="0.01" step="0.01" required>
                             </div>
                             <div class="form-group">
                                 <label for="savings-movement-date">Date</label>
@@ -1764,6 +1764,8 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     
     <!-- Scripts - Load in correct order -->
+    <!-- V2.2: Money input formatting utility — must load before app scripts -->
+    <script src="money-input-format.js?v=1.0"></script>
     <!-- Main app functionality -->
     <script src="app.js?v=3.0"></script>
     <script src="dashboard.js?v=4.0"></script>

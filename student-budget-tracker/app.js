@@ -635,7 +635,13 @@ function handleQuickExpense(e) {
     const categorySelect = document.getElementById('expense-category');
     const reasonTextarea = document.getElementById('expense-reason');
     
-    if (amountInput) amountInput.value = amount;
+    if (amountInput) {
+        // V2.2: set numeric value then apply comma-formatting for display
+        amountInput.value = amount;
+        if (window.moneyInputFormat?.applyMoneyFormat) {
+            window.moneyInputFormat.applyMoneyFormat(amountInput, true);
+        }
+    }
     if (categorySelect) categorySelect.value = category;
     if (reasonTextarea) reasonTextarea.value = reason;
     
@@ -689,7 +695,9 @@ function updateSavingsCalculator() {
     const dailyInput = document.getElementById('daily-savings-calculator');
     if (!dailyInput) return;
     
-    const daily = parseFloat(dailyInput.value) || 0;
+    // V2.2: strip commas from formatted display value before numeric calculation
+    const _parseMoney = window.moneyInputFormat?.parseMoneyValue ?? parseFloat;
+    const daily = _parseMoney(dailyInput.value) || 0;
     const weekly = daily * 7;
     const monthly = daily * 30; // Approximate
     const yearly = daily * 365;

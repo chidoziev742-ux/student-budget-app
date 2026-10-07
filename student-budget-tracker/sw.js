@@ -16,6 +16,7 @@ const STATIC_ASSETS = [
   './debug.js?v=1.0',
   './styles.css',
   './app.js',
+  './money-input-format.js?v=1.0',
   './main.js?v=5.0',
   './auth.js?v=5.0',
   './dashboard.js?v=4.0',
