@@ -769,3 +769,6 @@ input[type="radio"] {
 :root[data-theme="dark"] .modal-header h2 {
   color: var(--theme-text) !important;
 }
+:root[data-theme="dark"] #v2-available-balance {
+  color: #ffffffe5 !important;
+}

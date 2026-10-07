@@ -1,4 +1,5 @@
 ﻿# student-budget-app
+
 # Student Budget Tracker
 
 A mobile-first Progressive Web App (PWA) designed to help students manage their income, expenses, budgets, savings goals, and financial history in one place.
@@ -146,7 +147,6 @@ The application does not store service-role credentials or private server-side k
 
 Planned improvements include:
 
-- Fix balance visibility/eye-toggle duplication.
 - Safely refactor large HTML, CSS and JavaScript files into smaller modules.
 - Further notification UI improvements.
 - New-month contextual notifications.
@@ -156,11 +156,10 @@ Planned improvements include:
 - Include income, expenses and savings activity in exports.
 - Fix export version information so it reflects the current application release version.
 
-Future versions may introduce an Admin Dashboard for managing application-wide announcements, seasonal content, festival artwork and other administrative features.
-
 ## Release History
 
 ### V2.1.0
+
 - Continuous balance across months
 - Multiple income records
 - Persistent financial history
@@ -171,7 +170,9 @@ Future versions may introduce an Admin Dashboard for managing application-wide a
 - Visual and UI improvements
 
 ### V2.2.0
+
 Planned:
+
 - Export system upgrade
 - Export versioning
 - Improved notification system
@@ -180,13 +181,9 @@ Planned:
 - Codebase refactoring
 - General stability improvements
 
-
-
-
 ## Current Release
 
 **Version:** 2.1.0  
 **Release:** Smarter Money Management
-
 
 Built with the goal of helping students understand where their money comes from, where it goes, and how they can save more effectively.
