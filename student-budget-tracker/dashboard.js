@@ -218,13 +218,23 @@ function updateSummaryCards() {
   const totalSpentEl = document.getElementById("total-spent");
   const totalSavingsEl = document.getElementById("total-savings");
 
-  if (totalBudgetEl) totalBudgetEl.textContent = formatCurrency(totalBudget);
+  // if (totalBudgetEl) totalBudgetEl.textContent = formatCurrency(totalBudget);
+  // if (availableBalanceEl) {
+  //   availableBalanceEl.textContent = formatCurrency(availableBalance);
+  //   availableBalanceEl.setAttribute(
+  //     "data-actual",
+  //     formatCurrency(availableBalance),
+  //   );
+  // }
+  if (totalBudgetEl) {
+    totalBudgetEl.textContent = formatCurrency(totalBudget);
+  }
   if (availableBalanceEl) {
-    availableBalanceEl.textContent = formatCurrency(availableBalance);
-    availableBalanceEl.setAttribute(
-      "data-actual",
-      formatCurrency(availableBalance),
-    );
+    const formattedBalance = formatCurrency(availableBalance);
+    const isHidden = availableBalanceEl.dataset.balanceHidden === "true";
+
+    availableBalanceEl.setAttribute("data-actual", formattedBalance);
+    availableBalanceEl.textContent = isHidden ? "••••••" : formattedBalance;
   }
   if (totalSpentEl) totalSpentEl.textContent = formatCurrency(totalSpent);
   if (totalSavingsEl) {
@@ -557,6 +567,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Initialize balance toggle
+  const BALANCE_VISIBILITY_KEY = "studentBudgetBalanceHidden";
   initBalanceToggle();
 
   // Initialize sidebar navigation
@@ -610,29 +621,84 @@ function initMobileMenu() {
 }
 
 // --- Balance toggle functionality ---
+// function initBalanceToggle() {
+//   const toggleBtn = document.getElementById("balance-toggle");
+//   const balanceAmount = document.getElementById("v2-available-balance");
+
+//   if (toggleBtn && balanceAmount) {
+//     // let isHidden = false;
+//     let isHidden = balanceAmount.dataset.balanceHidden === "true";
+
+//     toggleBtn.addEventListener("click", () => {
+//       isHidden = !isHidden;
+//       balanceAmount.dataset.balanceHidden = String(isHidden);
+//       if (isHidden) {
+//         balanceAmount.textContent = "••••••";
+//         // balanceAmount.style.color = "rgba(255, 255, 255, 0.5)";
+//       } else {
+//         const actual = balanceAmount.getAttribute("data-actual") || "₦0";
+//         balanceAmount.textContent = actual;
+//         //  balanceAmount.style.color = "";
+//       }
+//       const icon = toggleBtn.querySelector("i");
+//       if (icon) {
+//         icon.classList.toggle("fa-eye");
+//         icon.classList.toggle("fa-eye-slash");
+//       }
+//     });
+//   }
+//}
+// function initBalanceToggle() {
+// --- Balance toggle functionality ---
+
+const BALANCE_VISIBILITY_KEY = "studentBudgetBalanceHidden";
+
 function initBalanceToggle() {
   const toggleBtn = document.getElementById("balance-toggle");
   const balanceAmount = document.getElementById("v2-available-balance");
 
   if (toggleBtn && balanceAmount) {
-    let isHidden = false;
+    const savedHiddenState =
+      localStorage.getItem(BALANCE_VISIBILITY_KEY) === "true";
+
+    let isHidden = savedHiddenState;
+
+    balanceAmount.dataset.balanceHidden = String(isHidden);
+
+    if (isHidden) {
+      balanceAmount.textContent = "••••••";
+    }
 
     toggleBtn.addEventListener("click", () => {
       isHidden = !isHidden;
+
+      balanceAmount.dataset.balanceHidden = String(isHidden);
+
+      localStorage.setItem(BALANCE_VISIBILITY_KEY, String(isHidden));
+
       if (isHidden) {
         balanceAmount.textContent = "••••••";
-        balanceAmount.style.color = "rgba(255, 255, 255, 0.5)";
       } else {
         const actual = balanceAmount.getAttribute("data-actual") || "₦0";
+
         balanceAmount.textContent = actual;
-        balanceAmount.style.color = "";
       }
+
       const icon = toggleBtn.querySelector("i");
+
       if (icon) {
-        icon.classList.toggle("fa-eye");
-        icon.classList.toggle("fa-eye-slash");
+        icon.classList.toggle("fa-eye", !isHidden);
+        icon.classList.toggle("fa-eye-slash", isHidden);
       }
     });
+
+    // Keep the eye icon consistent with the saved preference
+    const icon = toggleBtn.querySelector("i");
+
+    if (icon) {
+      icon.classList.toggle("fa-eye", !isHidden);
+      icon.classList.toggle("fa-eye-slash", isHidden);
+    }
   }
 }
 
