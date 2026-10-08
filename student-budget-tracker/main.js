@@ -1811,6 +1811,58 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // 10. Register Service Worker for PWA functionality
   if ("serviceWorker" in navigator) {
+    // Show the update banner only once per waiting worker. This guard also
+    // prevents an accidental reload loop.
+    let updateReloadTriggered = false;
+
+    const showUpdateBanner = () => {
+      const banner = document.getElementById("update-banner");
+      if (!banner) return;
+      banner.hidden = false;
+      // Next frame so the CSS transition runs.
+      requestAnimationFrame(() => banner.classList.add("is-visible"));
+    };
+
+    const hideUpdateBanner = () => {
+      const banner = document.getElementById("update-banner");
+      if (!banner) return;
+      banner.classList.remove("is-visible");
+      setTimeout(() => {
+        banner.hidden = true;
+      }, 250);
+    };
+
+    // Reload exactly once after the new worker takes control.
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (updateReloadTriggered) return;
+      updateReloadTriggered = true;
+      window.debugLog?.("[PWA] New service worker activated, reloading once");
+      window.location.reload();
+    });
+
+    const trackUpdates = (registration) => {
+      // Updates may already be waiting when the page loads on a device that
+      // downloaded a new worker in a previous session.
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        showUpdateBanner();
+      }
+
+      registration.addEventListener("updatefound", () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener("statechange", () => {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            // A new version finished installing and is now waiting.
+            window.debugLog?.("[PWA] New version available and waiting");
+            showUpdateBanner();
+          }
+        });
+      });
+    };
+
     navigator.serviceWorker
       .register("sw.js")
       .then((registration) => {
@@ -1819,10 +1871,36 @@ document.addEventListener("DOMContentLoaded", async function () {
           active: Boolean(registration.active),
         });
 
+        trackUpdates(registration);
+
         // Check for updates periodically
         setInterval(() => {
           registration.update();
         }, 60000); // Check every minute
+
+        // "Update now": tell the waiting worker to activate. The
+        // controllerchange handler above reloads the page once.
+        const updateNowBtn = document.getElementById("update-now-btn");
+        if (updateNowBtn) {
+          updateNowBtn.addEventListener("click", () => {
+            const waitingWorker = registration.waiting;
+            if (waitingWorker) {
+              waitingWorker.postMessage({ type: "SKIP_WAITING" });
+            } else {
+              // Nothing waiting (shouldn't normally happen) — just reload.
+              window.location.reload();
+            }
+          });
+        }
+
+        // "Later": keep using the current version. The update stays waiting
+        // and can be offered again on the next update check / app open.
+        const updateLaterBtn = document.getElementById("update-later-btn");
+        if (updateLaterBtn) {
+          updateLaterBtn.addEventListener("click", () => {
+            hideUpdateBanner();
+          });
+        }
       })
       .catch((error) => {
         window.debugWarn?.(
@@ -1834,7 +1912,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Listen for messages from Service Worker
     navigator.serviceWorker.addEventListener("message", (event) => {
-      if (event.data.type === "SYNC_EXPENSES") {
+      if (event.data && event.data.type === "SYNC_EXPENSES") {
         window.debugLog?.("[PWA] Syncing expenses:", event.data.message);
         // Optionally trigger data sync when coming back online
       }

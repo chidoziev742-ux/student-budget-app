@@ -1,7 +1,11 @@
 // Service Worker for Student Budget Tracker PWA
 // Provides offline caching while allowing Firebase Auth & Firestore to work normally
 
-const CACHE_NAME = 'student-budget-v6-auth-state-fix';
+// Cache version — bump this string on every deploy that changes any cached asset
+// so the browser installs a new service worker and detects the update.
+const CACHE_VERSION = 'v7-pwa-auto-update';
+const CACHE_PREFIX = 'student-budget-';
+const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const DEBUG_MODE = false;
 const debugLog = (...args) => {
   if (DEBUG_MODE) console.log(...args);
@@ -17,7 +21,7 @@ const STATIC_ASSETS = [
   './styles.css',
   './app.js',
   './money-input-format.js?v=1.0',
-  './main.js?v=5.0',
+  './main.js?v=6.0',
   './auth.js?v=5.0',
   './dashboard.js?v=4.0',
   './monthly-budget-system.js?v=4.0',
@@ -54,10 +58,23 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         debugLog('[SERVICE-WORKER] Installation complete');
-        // Force service worker to activate immediately
-        return self.skipWaiting();
+        // NOTE: We intentionally do NOT call skipWaiting() here.
+        // On a first install there is no active worker, so the new worker
+        // activates on its own. On an update, the new worker stays in the
+        // "waiting" state until the user taps "Update now", which sends
+        // SKIP_WAITING (handled below). This prevents a mid-session swap
+        // that could mix old and new assets (the stale JS/CSS problem).
       })
   );
+});
+
+// Let the frontend activate the waiting worker when the user chooses "Update now".
+self.addEventListener('message', (event) => {
+  const data = event.data || {};
+  if (data.type === 'SKIP_WAITING') {
+    debugLog('[SERVICE-WORKER] SKIP_WAITING received, activating');
+    self.skipWaiting();
+  }
 });
 
 // Activate event: clean up old caches
@@ -67,7 +84,9 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          // Only remove OUR own outdated caches. Never touch caches that
+          // belong to other origins/apps on the same browser profile.
+          if (cacheName.startsWith(CACHE_PREFIX) && cacheName !== CACHE_NAME) {
             debugLog('[SERVICE-WORKER] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
