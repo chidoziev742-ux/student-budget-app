@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="styles.css?v=3.1">
     <link rel="stylesheet" href="styles-monthly.css?v=1.1">
     <link rel="stylesheet" href="dashboard-styles.css?v=1.0">
-    <link rel="stylesheet" href="theme.css?v=1.0">
+    <link rel="stylesheet" href="theme.css?v=1.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="debug.js?v=1.0"></script>
@@ -1758,7 +1758,12 @@
     <script type="module" src="main.js?v=6.0"></script>
 
     <!-- PWA update banner (shown only when a new service worker is waiting) -->
-    <div id="update-banner" class="update-banner" role="status" aria-live="polite" hidden>
+    <!-- Inline critical styles keep the banner fixed to the viewport even if a
+         stale stylesheet is served, so it can never render as post-footer content.
+         bottom/left are intentionally NOT inlined: theme.css owns those so the
+         mobile safe-area media query can adjust them. -->
+    <div id="update-banner" class="update-banner" role="status" aria-live="polite" hidden
+         style="position:fixed;z-index:10050;">
         <div class="update-banner__text">
             <strong>New update available</strong>
             <span>A new version of Student Budget Tracker is ready.</span>

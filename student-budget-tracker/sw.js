@@ -3,7 +3,7 @@
 
 // Cache version — bump this string on every deploy that changes any cached asset
 // so the browser installs a new service worker and detects the update.
-const CACHE_VERSION = 'v7-pwa-auto-update';
+const CACHE_VERSION = 'v8-update-banner-styles';
 const CACHE_PREFIX = 'student-budget-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const DEBUG_MODE = false;
@@ -19,6 +19,7 @@ const STATIC_ASSETS = [
   './index.html',
   './debug.js?v=1.0',
   './styles.css',
+  './theme.css?v=1.1',
   './app.js',
   './money-input-format.js?v=1.0',
   './main.js?v=6.0',

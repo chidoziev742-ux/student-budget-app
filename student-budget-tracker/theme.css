@@ -775,16 +775,18 @@ input[type="radio"] {
 
 /* ============================================================
    PWA update banner
-   Subtle, mobile-first notification shown only when a new
-   service worker is waiting. Uses existing theme variables so
-   it works in both light and dark mode.
+   Compact, fixed notification shown only when a new service
+   worker is waiting. Uses existing theme variables so it works
+   in both light and dark mode.
    ============================================================ */
 .update-banner {
   position: fixed;
   left: 50%;
+  /* Keep clear of the bottom edge and the mobile home indicator. */
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  transform: translate(-50%, 140%);
-  width: min(420px, calc(100% - 24px));
+  transform: translate(-50%, calc(100% + 32px));
+  width: min(440px, calc(100% - 32px));
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -792,24 +794,26 @@ input[type="radio"] {
   background: var(--theme-surface);
   color: var(--theme-text);
   border: 1px solid var(--theme-border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--theme-shadow-floating);
-  /* Above the auth screen (9999) and modals (1000) so the update prompt is
-     never hidden, but below the transient welcome overlay (12000). */
+  /* Above modals (1000) and the auth screen (9999) so the prompt is never
+     hidden, but below the transient welcome overlay (12000). */
   z-index: 10050;
   opacity: 0;
+  pointer-events: none;
   transition:
     transform 0.28s ease,
     opacity 0.28s ease;
 }
 
 .update-banner[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .update-banner.is-visible {
   transform: translate(-50%, 0);
   opacity: 1;
+  pointer-events: auto;
 }
 
 .update-banner__text {
@@ -840,19 +844,25 @@ input[type="radio"] {
 }
 
 .update-banner__btn {
+  appearance: none;
+  -webkit-appearance: none;
   border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.8rem;
+  border-radius: 10px;
+  padding: 10px 16px;
+  min-height: 40px;
+  font-size: 0.82rem;
   font-weight: 600;
   font-family: inherit;
+  line-height: 1;
   cursor: pointer;
   white-space: nowrap;
   transition:
     background-color 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
+/* Subtle secondary action */
 .update-banner__btn--ghost {
   background: transparent;
   color: var(--theme-text-secondary);
@@ -864,13 +874,25 @@ input[type="radio"] {
   color: var(--theme-text);
 }
 
+.update-banner__btn--ghost:active {
+  background: var(--theme-surface-soft);
+}
+
+/* Primary brand-green action (falls back to the app green) */
 .update-banner__btn--primary {
-  background: var(--primary-color, #4361ee);
+  background: var(--v2-green-dark, #286449);
   color: #ffffff;
+  border-color: var(--v2-green-dark, #286449);
 }
 
 .update-banner__btn--primary:hover {
-  background: var(--secondary-color, #3450d4);
+  background: var(--dash-green-deep, #164b37);
+  border-color: var(--dash-green-deep, #164b37);
+  color: #ffffff;
+}
+
+.update-banner__btn--primary:active {
+  background: var(--dash-green-deep, #164b37);
 }
 
 .update-banner__btn:focus-visible {
@@ -878,24 +900,37 @@ input[type="radio"] {
   outline-offset: 2px;
 }
 
+/* Dark mode: slightly lighter green for contrast on dark surfaces */
 :root[data-theme="dark"] .update-banner__btn--primary {
-  background-color: #286449;
+  background: #286449;
+  border-color: #286449;
   color: #f7fbf8;
 }
 
-:root[data-theme="dark"] .update-banner__btn--primary:hover {
-  background-color: #347858;
+:root[data-theme="dark"] .update-banner__btn--primary:hover,
+:root[data-theme="dark"] .update-banner__btn--primary:active {
+  background: #347858;
+  border-color: #347858;
   color: #ffffff;
 }
 
+/* Narrow phones: stack text above full-width actions */
 @media (max-width: 480px) {
   .update-banner {
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
+    width: calc(100% - 20px);
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   .update-banner__actions {
-    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .update-banner__btn {
+    flex: 1 1 0;
+    justify-content: center;
+    text-align: center;
   }
 }
